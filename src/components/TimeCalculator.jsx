@@ -115,14 +115,7 @@ export default function TimeCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex flex-col justify-center items-center px-4 relative overflow-hidden">
-      {/* Vibrant flowing background gradients */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-60 -right-60 w-96 h-96 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse"></div>
-        <div className="absolute -bottom-60 -left-60 w-96 h-96 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-gradient-to-bl from-yellow-400 via-orange-500 to-pink-500 rounded-full mix-blend-screen filter blur-3xl opacity-25 animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-gradient-to-tr from-green-400 via-teal-500 to-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-25 animate-pulse" style={{animationDelay: '3s'}}></div>
-      </div>
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 relative">{/* Background animations now handled by App component */}
 
       <div className="relative bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] border border-gray-700/50 p-10 w-full max-w-2xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_0_rgba(0,0,0,0.8)]"
         style={{

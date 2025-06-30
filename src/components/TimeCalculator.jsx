@@ -1,13 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, PlayCircle, PauseCircle, Calculator } from 'lucide-react';
 
 export default function TimeCalculator() {
-  const [checkIn, setCheckIn] = useState('');
+  // Set default times
+  const [checkIn, setCheckIn] = useState('10:00');
   const [checkOut, setCheckOut] = useState('');
-  const [breakIn, setBreakIn] = useState('');
-  const [breakOut, setBreakOut] = useState('');
-  const [totalTime, setTotalTime] = useState(null);
+  const [breakIn, setBreakIn] = useState('14:00');  // 2:00 PM in 24-hour format
+  const [breakOut, setBreakOut] = useState('14:30'); // 2:30 PM in 24-hour format
+  const [calculationResults, setCalculationResults] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  const REQUIRED_HOURS = 8.5; // 8.5 hours required work time
+
+  // Update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Format current time with seconds
+  const formatCurrentTime = (date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  };
 
   const calculateTime = () => {
     setIsCalculating(true);
@@ -21,7 +44,9 @@ export default function TimeCalculator() {
       const end = toDate(checkOut);
 
       if (!start) {
-        setTotalTime("⚠️ Please enter check-in time");
+        setCalculationResults({
+          error: "⚠️ Please enter check-in time"
+        });
         setIsCalculating(false);
         return;
       }
@@ -41,22 +66,50 @@ export default function TimeCalculator() {
         workedMs += 24 * 60 * 60 * 1000; // Add 24 hours
       }
 
-      // Subtract break time if both break times are provided
+      // Calculate break duration
+      let breakDuration = 0;
       if (bIn && bOut && bOut > bIn) {
-        workedMs -= (bOut - bIn);
+        breakDuration = bOut - bIn;
+        workedMs -= breakDuration;
       }
 
       if (workedMs < 0) {
-        setTotalTime("❌ Invalid time range");
+        setCalculationResults({
+          error: "❌ Invalid time range"
+        });
         setIsCalculating(false);
         return;
       }
 
-      const seconds = Math.floor((workedMs / 1000) % 60);
-      const minutes = Math.floor((workedMs / (1000 * 60)) % 60);
-      const hours = Math.floor((workedMs / (1000 * 60 * 60)));
+      const workedHours = workedMs / (1000 * 60 * 60);
+      const remainingHours = Math.max(0, REQUIRED_HOURS - workedHours);
+      
+      // Calculate expected leave time
+      const expectedLeaveTime = new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + breakDuration);
+      
+      // Format times
+      const formatTime = (ms) => {
+        const hours = Math.floor(ms / (1000 * 60 * 60));
+        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+        return `${hours}h ${minutes}m ${seconds}s`;
+      };
 
-      setTotalTime(`${hours}h ${minutes}m ${seconds}s`);
+      const formatTimeOfDay = (date) => {
+        return date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        });
+      };
+
+      setCalculationResults({
+        totalWorked: formatTime(workedMs),
+        remainingTime: formatTime(remainingHours * 60 * 60 * 1000),
+        expectedLeaveTime: formatTimeOfDay(expectedLeaveTime),
+        isLive: !end
+      });
+      
       setIsCalculating(false);
     }, 1000);
   };
@@ -76,6 +129,14 @@ export default function TimeCalculator() {
           background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
           boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
         }}>
+        {/* Current Time Display */}
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-gray-900/60 to-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-gray-700/30">
+          <p className="text-sm text-gray-400 mb-1">Current Time</p>
+          <p className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            {formatCurrentTime(currentTime)}
+          </p>
+        </div>
+
         {/* Header with animated icon */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-2xl mb-4 transform transition-all duration-300 hover:rotate-12 hover:scale-110 shadow-lg">
@@ -119,19 +180,20 @@ export default function TimeCalculator() {
         </div>
 
         {/* Clear Button */}
-        {/* Calculate Button with loading animation */}
         <button
           onClick={() => {
-            setCheckIn('');
+            setCheckIn('10:00');
             setCheckOut('');
-            setBreakIn('');
-            setBreakOut('');
-            setTotalTime(null);
+            setBreakIn('14:00');
+            setBreakOut('14:30');
+            setCalculationResults(null);
           }}
           className="w-full mt-4 py-3 rounded-xl bg-gray-800/60 backdrop-blur-sm border border-gray-600/50 text-gray-200 font-medium hover:bg-gray-700/60 transform transition-all duration-300 hover:scale-[1.02] active:scale-95"
         >
           Clear All Fields
         </button>
+
+        {/* Calculate Button with loading animation */}
         <button
           onClick={calculateTime}
           disabled={isCalculating}
@@ -154,31 +216,53 @@ export default function TimeCalculator() {
         </button>
 
         {/* Results with entrance animation */}
-        {totalTime && (
+        {calculationResults && (
           <div className="mt-10 text-center transform transition-all duration-500 animate-fade-in-up">
-            <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
-              <p className="text-white/70 text-sm font-medium mb-2">Total Worked Time</p>
-              <p className="text-5xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
-                {totalTime}
-              </p>
-              <div className="mt-4 h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 rounded-full transform scale-x-0 animate-scale-x"></div>
-              
-              {/* Additional stats */}
-              {totalTime && !totalTime.includes('⚠️') && !totalTime.includes('❌') && (
+            {calculationResults.error ? (
+              <div className="bg-red-500/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20">
+                <p className="text-2xl font-bold text-red-400">{calculationResults.error}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Total Worked Time */}
+                <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
+                  <p className="text-white/70 text-sm font-medium mb-2">Total Worked Time</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {calculationResults.totalWorked}
+                  </p>
+                </div>
+
+                {/* Time Remaining */}
+                <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
+                  <p className="text-white/70 text-sm font-medium mb-2">Time Until {REQUIRED_HOURS} Hours</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    {calculationResults.remainingTime}
+                  </p>
+                </div>
+
+                {/* Expected Leave Time */}
+                <div className="bg-gradient-to-r from-purple-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
+                  <p className="text-white/70 text-sm font-medium mb-2">Expected Leave Time</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
+                    {calculationResults.expectedLeaveTime}
+                  </p>
+                </div>
+
+                {/* Status Information */}
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <div className="flex justify-between text-sm text-white/60">
                     <span>Status:</span>
                     <span className="text-green-400">✓ Calculated</span>
                   </div>
-                  {!checkOut && (
+                  {calculationResults.isLive && (
                     <div className="flex justify-between text-sm text-white/60 mt-1">
                       <span>Mode:</span>
                       <span className="text-yellow-400">⏰ Live tracking</span>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

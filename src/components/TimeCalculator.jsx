@@ -9,28 +9,7 @@ export default function TimeCalculator() {
   const [breakOut, setBreakOut] = useState('14:30'); // 2:30 PM in 24-hour format
   const [calculationResults, setCalculationResults] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-
   const REQUIRED_HOURS = 8.5; // 8.5 hours required work time
-
-  // Update current time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Format current time with seconds
-  const formatCurrentTime = (date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    });
-  };
 
   const calculateTime = () => {
     setIsCalculating(true);
@@ -122,13 +101,7 @@ export default function TimeCalculator() {
           background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
           boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
         }}>
-        {/* Current Time Display */}
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-gray-900/60 to-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-gray-700/30">
-          <p className="text-sm text-gray-400 mb-1">Current Time</p>
-          <p className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            {formatCurrentTime(currentTime)}
-          </p>
-        </div>
+
 
         {/* Header with animated icon */}
         <div className="text-center mb-8">
@@ -210,50 +183,58 @@ export default function TimeCalculator() {
 
         {/* Results with entrance animation */}
         {calculationResults && (
-          <div className="mt-10 text-center transform transition-all duration-500 animate-fade-in-up">
+          <div className="mt-10 transform transition-all duration-500 animate-fade-in-up">
             {calculationResults.error ? (
-              <div className="bg-red-500/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20">
-                <p className="text-2xl font-bold text-red-400">{calculationResults.error}</p>
+              <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 border border-red-500/20">
+                <p className="text-lg font-bold text-red-400">{calculationResults.error}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Total Worked Time */}
-                <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
-                  <p className="text-white/70 text-sm font-medium mb-2">Total Worked Time</p>
-                  <p className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    {calculationResults.totalWorked}
-                  </p>
+                <div className="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-cyan-300 text-sm font-medium">Total Worked Time</p>
+                      <p className="text-white text-lg font-bold">{calculationResults.totalWorked}</p>
+                    </div>
+                    <div className="text-cyan-400 text-2xl">⏰</div>
+                  </div>
                 </div>
 
                 {/* Time Remaining */}
-                <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
-                  <p className="text-white/70 text-sm font-medium mb-2">Time Until {REQUIRED_HOURS} Hours</p>
-                  <p className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    {calculationResults.remainingTime}
-                  </p>
+                <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-4 border border-pink-500/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-pink-300 text-sm font-medium">Time Until {REQUIRED_HOURS} Hours</p>
+                      <p className="text-white text-lg font-bold">{calculationResults.remainingTime}</p>
+                    </div>
+                    <div className="text-pink-400 text-2xl">⏳</div>
+                  </div>
                 </div>
 
                 {/* Expected Leave Time */}
-                <div className="bg-gradient-to-r from-purple-500/20 to-cyan-500/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 transform hover:scale-105 transition-all duration-300">
-                  <p className="text-white/70 text-sm font-medium mb-2">Expected Leave Time</p>
-                  <p className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">
-                    {calculationResults.expectedLeaveTime}
-                  </p>
+                <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-300 text-sm font-medium">Expected Leave Time</p>
+                      <p className="text-white text-lg font-bold">{calculationResults.expectedLeaveTime}</p>
+                    </div>
+                    <div className="text-purple-400 text-2xl">🚪</div>
+                  </div>
                 </div>
 
                 {/* Status Information */}
-                <div className="mt-4 pt-4 border-t border-white/10">
-                  <div className="flex justify-between text-sm text-white/60">
-                    <span>Status:</span>
-                    <span className="text-green-400">✓ Calculated</span>
-                  </div>
-                  {calculationResults.isLive && (
-                    <div className="flex justify-between text-sm text-white/60 mt-1">
-                      <span>Mode:</span>
-                      <span className="text-yellow-400">⏰ Live tracking</span>
+                {calculationResults.isLive && (
+                  <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-4 border border-green-500/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-300 text-sm font-medium">Status</p>
+                        <p className="text-white text-lg font-bold">Live Tracking</p>
+                      </div>
+                      <div className="text-green-400 text-2xl">🔴</div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

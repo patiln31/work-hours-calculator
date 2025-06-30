@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* Custom weather animations */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-10px) translateX(0px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(80px) translateX(15px);
+    opacity: 0;
+  }
+}
+
+@keyframes windSwirl {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(20px) translateY(-10px) rotate(180deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(40px) translateY(5px) rotate(360deg);
+    opacity: 0;
+  }
+}

@@ -191,48 +191,56 @@ export default function TimeCalculator() {
             ) : (
               <div className="space-y-3">
                 {/* Total Worked Time */}
-                <div className="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20">
-                  <div className="flex items-center justify-between">
+                <div className="group relative bg-gradient-to-r from-cyan-500/20 to-teal-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/40 cursor-pointer">
+                  <div className="relative z-10 flex items-center justify-between">
                     <div>
-                      <p className="text-cyan-300 text-sm font-medium">Total Worked Time</p>
-                      <p className="text-white text-lg font-bold">{calculationResults.totalWorked}</p>
+                      <p className="text-cyan-300 text-sm font-medium group-hover:text-cyan-200 transition-colors duration-300">Total Worked Time</p>
+                      <p className="text-white text-lg font-bold group-hover:text-cyan-100 transition-colors duration-300">{calculationResults.totalWorked}</p>
                     </div>
-                    <div className="text-cyan-400 text-2xl">⏰</div>
+                    <div className="text-cyan-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">⏰</div>
                   </div>
+                  {/* Hover glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400/10 to-teal-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
 
                 {/* Time Remaining */}
-                <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-4 border border-pink-500/20">
-                  <div className="flex items-center justify-between">
+                <div className="group relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-4 border border-pink-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/40 cursor-pointer">
+                  <div className="relative z-10 flex items-center justify-between">
                     <div>
-                      <p className="text-pink-300 text-sm font-medium">Time Until {REQUIRED_HOURS} Hours</p>
-                      <p className="text-white text-lg font-bold">{calculationResults.remainingTime}</p>
+                      <p className="text-pink-300 text-sm font-medium group-hover:text-pink-200 transition-colors duration-300">Time Until {REQUIRED_HOURS} Hours</p>
+                      <p className="text-white text-lg font-bold group-hover:text-pink-100 transition-colors duration-300">{calculationResults.remainingTime}</p>
                     </div>
-                    <div className="text-pink-400 text-2xl">⏳</div>
+                    <div className="text-pink-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">⏳</div>
                   </div>
+                  {/* Hover glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
 
                 {/* Expected Leave Time */}
-                <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20">
-                  <div className="flex items-center justify-between">
+                <div className="group relative bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/40 cursor-pointer">
+                  <div className="relative z-10 flex items-center justify-between">
                     <div>
-                      <p className="text-purple-300 text-sm font-medium">Expected Leave Time</p>
-                      <p className="text-white text-lg font-bold">{calculationResults.expectedLeaveTime}</p>
+                      <p className="text-purple-300 text-sm font-medium group-hover:text-purple-200 transition-colors duration-300">Expected Leave Time</p>
+                      <p className="text-white text-lg font-bold group-hover:text-purple-100 transition-colors duration-300">{calculationResults.expectedLeaveTime}</p>
                     </div>
-                    <div className="text-purple-400 text-2xl">🚪</div>
+                    <div className="text-purple-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300">🚪</div>
                   </div>
+                  {/* Hover glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400/10 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
 
                 {/* Status Information */}
                 {calculationResults.isLive && (
-                  <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-4 border border-green-500/20">
-                    <div className="flex items-center justify-between">
+                  <div className="group relative bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-4 border border-green-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/20 hover:border-green-400/40 cursor-pointer">
+                    <div className="relative z-10 flex items-center justify-between">
                       <div>
-                        <p className="text-green-300 text-sm font-medium">Status</p>
-                        <p className="text-white text-lg font-bold">Live Tracking</p>
+                        <p className="text-green-300 text-sm font-medium group-hover:text-green-200 transition-colors duration-300">Status</p>
+                        <p className="text-white text-lg font-bold group-hover:text-green-100 transition-colors duration-300">Live Tracking</p>
                       </div>
-                      <div className="text-green-400 text-2xl">🔴</div>
+                      <div className="text-green-400 text-2xl group-hover:scale-110 group-hover:animate-pulse transition-transform duration-300">🔴</div>
                     </div>
+                    {/* Hover glow effect */}
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-400/10 to-emerald-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                   </div>
                 )}
               </div>

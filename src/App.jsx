@@ -42,8 +42,21 @@ function App() {
         <div className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-gradient-to-tr from-green-400 via-teal-500 to-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-25 animate-pulse" style={{animationDelay: '3s'}}></div>
       </div>
 
-      {/* Top Right Current Time */}
-      <div className="absolute top-6 right-6 z-20">
+      {/* Mobile Time Display - Minimal & Centered */}
+      <div className="lg:hidden absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="bg-gradient-to-r from-gray-900/70 via-black/60 to-gray-900/70 backdrop-blur-lg rounded-lg px-4 py-2 border border-gray-600/40"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(20,20,20,0.8) 50%, rgba(0,0,0,0.7) 100%)',
+            boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          }}>
+          <div className="text-sm font-semibold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            {formatTime(currentTime)}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop/Tablet Time Display - Full Glassmorphism */}
+      <div className="hidden lg:block absolute top-6 right-6 z-20">
         <div className="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-2xl p-4 border border-gray-700/50 transform hover:scale-105 transition-all duration-300"
           style={{
             background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
@@ -61,29 +74,51 @@ function App() {
         </div>
       </div>
       
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_320px] min-h-screen relative z-10">
-        {/* Left Side Panel - Weather & Stats */}
-        <div className="hidden lg:flex lg:flex-col">
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            <div className="flex flex-col justify-center min-h-full py-8">
-              <WeatherQuotes />
-            </div>
-          </div>
-        </div>
+      {/* Main Content - Responsive Layout */}
+      <div className="min-h-screen relative z-10">
         
-        {/* Main Calculator - Center */}
-        <div className="flex items-center justify-center px-4 lg:px-8 py-8">
-          <div className="w-full max-w-4xl">
+        {/* Mobile Layout - Stacked */}
+        <div className="lg:hidden flex flex-col">
+          {/* Mobile Time Calculator */}
+          <div className="flex-1 px-4 py-6">
             <TimeCalculator />
           </div>
+          
+          {/* Mobile Weather & Stats */}
+          <div className="px-4 py-4">
+            <WeatherQuotes />
+          </div>
+          
+          {/* Mobile Work Life Balance */}
+          <div className="px-4 py-4 pb-8">
+            <WorkLifeFacts />
+          </div>
         </div>
-        
-        {/* Right Side Panel - Work Life Balance */}
-        <div className="hidden lg:flex lg:flex-col">
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            <div className="flex flex-col justify-center min-h-full py-8">
-              <WorkLifeFacts />
+
+        {/* Desktop Layout - Three Columns */}
+        <div className="hidden lg:grid lg:grid-cols-[320px_1fr_320px] min-h-screen">
+          {/* Left Side Panel - Weather & Stats */}
+          <div className="flex flex-col">
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+              <div className="flex flex-col justify-center min-h-full py-8">
+                <WeatherQuotes />
+              </div>
+            </div>
+          </div>
+          
+          {/* Main Calculator - Center */}
+          <div className="flex items-center justify-center px-8 py-8">
+            <div className="w-full max-w-4xl">
+              <TimeCalculator />
+            </div>
+          </div>
+          
+          {/* Right Side Panel - Work Life Balance */}
+          <div className="flex flex-col">
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+              <div className="flex flex-col justify-center min-h-full py-8">
+                <WorkLifeFacts />
+              </div>
             </div>
           </div>
         </div>

@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import TimeCalculator from './components/TimeCalculator'
 import WorkLifeFacts from './components/WorkLifeFacts'
 import WeatherQuotes from './components/WeatherQuotes'
+import Dashboard from './pages/Dashboard'
+import Navigation from './components/Navigation'
+import ProtectedRoute from './components/ProtectedRoute'
 
-function App() {
+// Home component for the main calculator
+function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
+    console.log('==== ',import.meta.env.VITE_SUPABASE_URL);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -43,7 +50,7 @@ function App() {
       </div>
 
       {/* Mobile Time Display - Minimal & Centered */}
-      <div className="lg:hidden absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
+      <div className="lg:hidden absolute top-20 left-1/2 transform -translate-x-1/2 z-20">
         <div className="bg-gradient-to-r from-gray-900/70 via-black/60 to-gray-900/70 backdrop-blur-lg rounded-lg px-4 py-2 border border-gray-600/40"
           style={{
             background: 'linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(20,20,20,0.8) 50%, rgba(0,0,0,0.7) 100%)',
@@ -56,7 +63,7 @@ function App() {
       </div>
 
       {/* Desktop/Tablet Time Display - Full Glassmorphism */}
-      <div className="hidden lg:block absolute top-6 right-6 z-20">
+      <div className="hidden lg:block absolute top-20 right-6 z-20">
         <div className="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-2xl p-4 border border-gray-700/50 transform hover:scale-105 transition-all duration-300"
           style={{
             background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
@@ -75,7 +82,7 @@ function App() {
       </div>
       
       {/* Main Content - Responsive Layout */}
-      <div className="min-h-screen relative z-10">
+      <div className="min-h-screen relative z-10 pt-16">
         
         {/* Mobile Layout - Stacked */}
         <div className="lg:hidden flex flex-col">
@@ -124,6 +131,29 @@ function App() {
         </div>
       </div>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router basename="/work-hours-calculator">
+        <div className="min-h-screen">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   )
 }
 

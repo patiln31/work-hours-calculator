@@ -379,7 +379,12 @@ export default function TimeCalculator() {
                                     <div className="relative z-10 flex items-center justify-between">
                                         <div>
                                             <p className="text-purple-300 text-sm font-medium group-hover:text-purple-200 transition-colors duration-300">Expected Leave Time</p>
-                                            <p className="text-white text-lg font-bold group-hover:text-purple-100 transition-colors duration-300">{calculationResults.expectedLeaveTime}</p>
+                                            <p className="text-white text-lg font-bold group-hover:text-purple-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                <span className="inline-block animate-pulse group-hover:animate-none transition-all duration-300 bg-gradient-to-r from-white via-purple-100 to-white bg-clip-text group-hover:from-purple-200 group-hover:via-white group-hover:to-purple-200 bg-[length:200%_100%] animate-gradient-x">
+                                                    {calculationResults.expectedLeaveTime}
+                                                </span>
+                                                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
+                                            </p>
                                         </div>
                                         <div className="text-purple-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300 flex items-center justify-center w-8 h-8">🚪</div>
                                     </div>
@@ -392,7 +397,12 @@ export default function TimeCalculator() {
                                     <div className="relative z-10 flex items-center justify-between">
                                         <div>
                                             <p className="text-cyan-300 text-sm font-medium group-hover:text-cyan-200 transition-colors duration-300">Total Worked Time</p>
-                                            <p className="text-white text-lg font-bold group-hover:text-cyan-100 transition-colors duration-300">{calculationResults.totalWorked}</p>
+                                            <p className="text-white text-lg font-bold group-hover:text-cyan-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                <span className="inline-block animate-bounce group-hover:animate-pulse transition-all duration-300 bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text group-hover:from-cyan-200 group-hover:via-white group-hover:to-cyan-200 bg-[length:200%_100%] animate-gradient-x">
+                                                    {calculationResults.totalWorked}
+                                                </span>
+                                                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
+                                            </p>
                                         </div>
                                         <div className="text-cyan-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300 flex items-center justify-center w-8 h-8">⏰</div>
                                     </div>
@@ -405,7 +415,12 @@ export default function TimeCalculator() {
                                     <div className="relative z-10 flex items-center justify-between">
                                         <div>
                                             <p className="text-pink-300 text-sm font-medium group-hover:text-pink-200 transition-colors duration-300">Time Until {REQUIRED_HOURS} Hours</p>
-                                            <p className="text-white text-lg font-bold group-hover:text-pink-100 transition-colors duration-300">{calculationResults.remainingTime}</p>
+                                            <p className="text-white text-lg font-bold group-hover:text-pink-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                <span className="inline-block animate-pulse group-hover:animate-bounce transition-all duration-300 bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text group-hover:from-pink-200 group-hover:via-white group-hover:to-pink-200 bg-[length:200%_100%] animate-gradient-x">
+                                                    {calculationResults.remainingTime}
+                                                </span>
+                                                <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
+                                            </p>
                                         </div>
                                         <div className="text-pink-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300 flex items-center justify-center w-8 h-8">⏳</div>
                                     </div>
@@ -419,8 +434,11 @@ export default function TimeCalculator() {
                                         <div className="relative z-10 flex items-center justify-between">
                                             <div>
                                                 <p className="text-orange-300 text-sm font-medium group-hover:text-orange-200 transition-colors duration-300">Break Credit (Leave Early)</p>
-                                                <p className="text-white text-lg font-bold group-hover:text-orange-100 transition-colors duration-300">
-                                                    {formatTime(calculationResults.breakInfo.credit)}
+                                                <p className="text-white text-lg font-bold group-hover:text-orange-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                    <span className="inline-block animate-pulse group-hover:animate-bounce transition-all duration-300 bg-gradient-to-r from-white via-orange-100 to-white bg-clip-text group-hover:from-orange-200 group-hover:via-white group-hover:to-orange-200 bg-[length:200%_100%] animate-gradient-x">
+                                                        {formatTime(calculationResults.breakInfo.credit)}
+                                                    </span>
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
                                                 </p>
                                                 <p className="text-orange-200/70 text-xs mt-1">
                                                     Took {formatTime(calculationResults.breakInfo.actualBreak)} of {formatTime(calculationResults.breakInfo.standardBreak)} break
@@ -445,11 +463,14 @@ export default function TimeCalculator() {
                                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                                     </span>
                                                 </p>
-                                                <p className="text-white text-lg font-bold group-hover:text-green-100 transition-colors duration-300">
-                                                    Live Tracking • Updates Every Second
+                                                <p className="text-white text-lg font-bold group-hover:text-green-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                    <span className="inline-block animate-pulse transition-all duration-300 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text group-hover:from-green-200 group-hover:via-white group-hover:to-green-200 bg-[length:200%_100%] animate-gradient-x">
+                                                        Live Tracking • Updates Every Second
+                                                    </span>
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
                                                 </p>
-                                                <p className="text-green-200/70 text-xs mt-1">
-                                                    Current time: {formatTimeOfDay(currentTime)}
+                                                <p className="text-green-200/70 text-xs mt-1 transition-all duration-300 group-hover:text-green-100/80">
+                                                    Current time: <span className="font-mono animate-pulse">{formatTimeOfDay(currentTime)}</span>
                                                 </p>
                                             </div>
                                             <div className="text-green-400 text-2xl group-hover:scale-110 animate-pulse transition-transform duration-300 flex items-center justify-center w-8 h-8">🔴</div>
@@ -463,6 +484,36 @@ export default function TimeCalculator() {
                     </div>
                 )}
             </div>
+
+            {/* Footer */}
+            <footer className="mt-12 w-full max-w-2xl">
+                <div className="group relative bg-gradient-to-r from-gray-900/60 via-black/40 to-gray-900/60 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/30 transform transition-all duration-500 hover:scale-[1.01] hover:border-purple-500/40"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(20,20,20,0.7) 50%, rgba(0,0,0,0.6) 100%)',
+                        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                    }}>
+                    
+                    {/* Animated gradient border effect */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    
+                    <div className="relative z-10 text-center">
+                        <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
+                            <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent font-medium group-hover:from-pink-300 group-hover:via-purple-300 group-hover:to-cyan-300 transition-all duration-300">
+                                A subtle reminder that you're still at work. 😬
+                            </span>
+                        </p>
+                        <p className="text-gray-400 text-sm mt-2 group-hover:text-gray-300 transition-colors duration-300">
+                            – Created by{" "}
+                            <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent font-semibold group-hover:from-cyan-300 group-hover:to-purple-300 transition-all duration-300">
+                                Nilesh Patil
+                            </span>
+                        </p>
+                    </div>
+                    
+                    {/* Subtle pulse animation on hover */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-500 pointer-events-none"></div>
+                </div>
+            </footer>
 
             <style jsx>{`
         @keyframes fade-in-up {
@@ -484,6 +535,33 @@ export default function TimeCalculator() {
             transform: scaleX(1);
           }
         }
+
+        @keyframes gradient-x {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        @keyframes number-glow {
+          0%, 100% {
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+          }
+          50% {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(255, 255, 255, 0.4);
+          }
+        }
         
         .animate-fade-in-up {
           animation: fade-in-up 0.6s ease-out;
@@ -491,6 +569,44 @@ export default function TimeCalculator() {
         
         .animate-scale-x {
           animation: scale-x 0.8s ease-out 0.3s both;
+        }
+
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+          background-size: 200% 200%;
+        }
+
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+
+        .animate-number-glow {
+          animation: number-glow 2s ease-in-out infinite;
+        }
+
+        /* Enhanced time display animations */
+        .time-display {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .time-display::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent
+          );
+          transition: left 0.8s;
+        }
+
+        .time-display:hover::before {
+          left: 100%;
         }
 
         /* Custom time picker styling with glassmorphism clock icon */

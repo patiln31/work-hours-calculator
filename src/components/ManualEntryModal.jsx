@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { X, Save, Calculator, Clock } from 'lucide-react'
+import { X, Save, Calculator, Clock, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import { timeEntriesService } from '../services/timeEntries'
+import MeetingModal from './MeetingModal'
 
 export default function ManualEntryModal({ 
   isOpen, 
@@ -18,6 +19,8 @@ export default function ManualEntryModal({
     breakIn: '',
     breakOut: ''
   })
+  const [meetingEntries, setMeetingEntries] = useState([])
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [calculatedHours, setCalculatedHours] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -31,6 +34,12 @@ export default function ManualEntryModal({
         breakIn: existingEntry.break_in || '',
         breakOut: existingEntry.break_out || ''
       })
+      // Load meeting data if available
+      if (existingEntry.meeting_data) {
+        setMeetingEntries(existingEntry.meeting_data)
+      } else {
+        setMeetingEntries([])
+      }
     } else {
       setFormData({
         checkIn: '',
@@ -38,6 +47,7 @@ export default function ManualEntryModal({
         breakIn: '',
         breakOut: ''
       })
+      setMeetingEntries([])
     }
     setError('')
     setCalculatedHours(null)
@@ -75,8 +85,30 @@ export default function ManualEntryModal({
         throw new Error('Both break-in and break-out times are required if using breaks')
       }
 
+      // Calculate meeting hours
+      let meetingHours = null
+      if (meetingEntries && meetingEntries.length > 0) {
+        let totalMeetingMs = 0
+        meetingEntries.forEach(meeting => {
+          if (meeting.start && meeting.end) {
+            const startTime = new Date(`1970-01-01T${meeting.start}:00`)
+            const endTime = new Date(`1970-01-01T${meeting.end}:00`)
+            if (endTime > startTime) {
+              totalMeetingMs += endTime - startTime
+            }
+          }
+        })
+        meetingHours = Math.round((totalMeetingMs / (1000 * 60 * 60)) * 100) / 100
+      }
+
+      const entryData = {
+        ...formData,
+        meetingHours,
+        meetingData: meetingEntries.length > 0 ? meetingEntries : null
+      }
+
       const result = await timeEntriesService.saveManualTimeEntry(
-        formData, 
+        entryData, 
         selectedDate, 
         targetUserId
       )
@@ -180,6 +212,20 @@ export default function ManualEntryModal({
             ))}
           </div>
 
+          {/* Meeting Hours Button */}
+          <button
+            onClick={() => setShowMeetingModal(true)}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-cyan-500/20 backdrop-blur-sm border border-purple-500/30 text-purple-300 font-medium hover:from-purple-500/30 hover:to-cyan-500/30 transform transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2"
+          >
+            <Users className="w-4 h-4" />
+            <span>Add Meeting Hours</span>
+            {meetingEntries.length > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-purple-500/30 rounded-full text-xs">
+                {meetingEntries.length} meeting{meetingEntries.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </button>
+
           {/* Calculated Hours Display */}
           {calculatedHours !== null && (
             <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-4 border border-green-500/20">
@@ -233,6 +279,17 @@ export default function ManualEntryModal({
           </div>
         </div>
       </div>
+
+      {/* Meeting Modal */}
+      <MeetingModal
+        isOpen={showMeetingModal}
+        onClose={() => setShowMeetingModal(false)}
+        onSave={(meetings) => {
+          setMeetingEntries(meetings);
+          setShowMeetingModal(false);
+        }}
+        initialMeetings={meetingEntries}
+      />
     </div>
   )
 } 

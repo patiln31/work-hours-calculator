@@ -1,5 +1,487 @@
 @import "tailwindcss";
 
+/* Custom animations */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out;
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+  background-size: 200% 200%;
+}
+
+/* Smoke animations */
+@keyframes smoke-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  20% {
+    opacity: 0.8;
+    transform: translateY(-10px) translateX(-5px) scale(1);
+  }
+  80% {
+    opacity: 0.4;
+    transform: translateY(-30px) translateX(-15px) scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) translateX(-25px) scale(2);
+  }
+}
+
+@keyframes smoke-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  15% {
+    opacity: 0.7;
+    transform: translateY(-8px) translateX(3px) scale(1);
+  }
+  70% {
+    opacity: 0.3;
+    transform: translateY(-25px) translateX(12px) scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-45px) translateX(20px) scale(1.8);
+  }
+}
+
+@keyframes smoke-3 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  25% {
+    opacity: 0.6;
+    transform: translateY(-12px) translateX(6px) scale(1);
+  }
+  75% {
+    opacity: 0.2;
+    transform: translateY(-35px) translateX(18px) scale(1.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-55px) translateX(28px) scale(2.2);
+  }
+}
+
+@keyframes smoke-4 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  18% {
+    opacity: 0.8;
+    transform: translateY(-9px) translateX(-3px) scale(1);
+  }
+  65% {
+    opacity: 0.4;
+    transform: translateY(-28px) translateX(-12px) scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-48px) translateX(-22px) scale(2.1);
+  }
+}
+
+@keyframes smoke-5 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  22% {
+    opacity: 0.7;
+    transform: translateY(-11px) translateX(4px) scale(1);
+  }
+  78% {
+    opacity: 0.3;
+    transform: translateY(-32px) translateX(15px) scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-52px) translateX(25px) scale(2.3);
+  }
+}
+
+@keyframes smoke-6 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  12% {
+    opacity: 0.6;
+    transform: translateY(-7px) translateX(-2px) scale(1);
+  }
+  60% {
+    opacity: 0.2;
+    transform: translateY(-22px) translateX(-8px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-42px) translateX(-18px) scale(1.9);
+  }
+}
+
+@keyframes smoke-7 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  28% {
+    opacity: 0.8;
+    transform: translateY(-13px) translateX(7px) scale(1);
+  }
+  82% {
+    opacity: 0.4;
+    transform: translateY(-38px) translateX(20px) scale(1.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-58px) translateX(30px) scale(2.4);
+  }
+}
+
+@keyframes smoke-8 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scale(0);
+  }
+  16% {
+    opacity: 0.7;
+    transform: translateY(-10px) translateX(-4px) scale(1);
+  }
+  68% {
+    opacity: 0.3;
+    transform: translateY(-26px) translateX(-10px) scale(1.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px) translateX(-20px) scale(2.0);
+  }
+}
+
+/* Smoke wisp animations */
+@keyframes smoke-wisp-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scaleX(0);
+  }
+  30% {
+    opacity: 0.6;
+    transform: translateY(-15px) translateX(-8px) scaleX(1);
+  }
+  70% {
+    opacity: 0.2;
+    transform: translateY(-35px) translateX(-20px) scaleX(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-55px) translateX(-32px) scaleX(1.5);
+  }
+}
+
+@keyframes smoke-wisp-2 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scaleX(0);
+  }
+  25% {
+    opacity: 0.5;
+    transform: translateY(-12px) translateX(6px) scaleX(1);
+  }
+  65% {
+    opacity: 0.1;
+    transform: translateY(-28px) translateX(15px) scaleX(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-48px) translateX(25px) scaleX(1.3);
+  }
+}
+
+@keyframes smoke-wisp-3 {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0) scaleX(0);
+  }
+  35% {
+    opacity: 0.7;
+    transform: translateY(-18px) translateX(-10px) scaleX(1);
+  }
+  75% {
+    opacity: 0.3;
+    transform: translateY(-40px) translateX(-25px) scaleX(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) translateX(-35px) scaleX(1.6);
+  }
+}
+
+/* Smoke animation classes */
+.animate-smoke-1 {
+  animation: smoke-1 4s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-smoke-2 {
+  animation: smoke-2 4.5s ease-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-smoke-3 {
+  animation: smoke-3 3.8s ease-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-smoke-4 {
+  animation: smoke-4 4.2s ease-out infinite;
+  animation-delay: 0.3s;
+}
+
+.animate-smoke-5 {
+  animation: smoke-5 4.7s ease-out infinite;
+  animation-delay: 0.8s;
+}
+
+.animate-smoke-6 {
+  animation: smoke-6 3.5s ease-out infinite;
+  animation-delay: 1.2s;
+}
+
+.animate-smoke-7 {
+  animation: smoke-7 4.8s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-smoke-8 {
+  animation: smoke-8 4.1s ease-out infinite;
+  animation-delay: 0.7s;
+}
+
+.animate-smoke-wisp-1 {
+  animation: smoke-wisp-1 5s ease-out infinite;
+  animation-delay: 0.1s;
+}
+
+.animate-smoke-wisp-2 {
+  animation: smoke-wisp-2 4.3s ease-out infinite;
+  animation-delay: 0.6s;
+}
+
+.animate-smoke-wisp-3 {
+  animation: smoke-wisp-3 4.9s ease-out infinite;
+  animation-delay: 0.4s;
+}
+
+/* Sarcastic animations */
+@keyframes sarcastic-card {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(0.5deg) scale(1.01);
+  }
+  50% {
+    transform: rotate(-0.5deg) scale(1.02);
+  }
+  75% {
+    transform: rotate(0.3deg) scale(1.01);
+  }
+}
+
+@keyframes sarcastic-text {
+  0%, 100% {
+    transform: skewX(0deg);
+  }
+  25% {
+    transform: skewX(0.5deg);
+  }
+  50% {
+    transform: skewX(-0.5deg);
+  }
+  75% {
+    transform: skewX(0.3deg);
+  }
+}
+
+@keyframes sarcastic-subtitle {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+}
+
+@keyframes eye-roll {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(15deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(30deg) scale(1.2);
+  }
+  75% {
+    transform: rotate(15deg) scale(1.1);
+  }
+}
+
+@keyframes eye-roll-delayed {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-15deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(-30deg) scale(1.2);
+  }
+  75% {
+    transform: rotate(-15deg) scale(1.1);
+  }
+}
+
+@keyframes sparkle-1 {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.2) rotate(90deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1) rotate(180deg);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.1) rotate(270deg);
+  }
+}
+
+@keyframes sparkle-2 {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.9) rotate(0deg);
+  }
+  33% {
+    opacity: 1;
+    transform: scale(1.3) rotate(120deg);
+  }
+  66% {
+    opacity: 0.6;
+    transform: scale(1.1) rotate(240deg);
+  }
+}
+
+@keyframes sparkle-3 {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4) rotate(180deg);
+  }
+}
+
+/* Sarcastic animation classes */
+.animate-sarcastic-card {
+  animation: sarcastic-card 3s ease-in-out infinite;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-sarcastic-text {
+  animation: sarcastic-text 4s ease-in-out infinite;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-sarcastic-subtitle {
+  animation: sarcastic-subtitle 2s ease-in-out infinite;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-eye-roll {
+  animation: eye-roll 2.5s ease-in-out infinite;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-eye-roll-delayed {
+  animation: eye-roll-delayed 2.5s ease-in-out infinite;
+  animation-delay: 1.25s;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-sparkle-1 {
+  animation: sparkle-1 3s ease-in-out infinite;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-sparkle-2 {
+  animation: sparkle-2 3.5s ease-in-out infinite;
+  animation-delay: 1s;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.animate-sparkle-3 {
+  animation: sparkle-3 4s ease-in-out infinite;
+  animation-delay: 2s;
+  /* Mobile optimization: reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* Custom weather animations */
 @keyframes snowfall {
   0% {

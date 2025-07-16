@@ -1,8 +1,8 @@
-# 🕐 Office Hours Calculator
+# 🕐 Punch'd
 
 A beautiful, responsive web application for tracking working hours with precision. Features real-time weather integration, interactive animations, and a stunning glassmorphism UI design.
 
-![Office Hours Calculator Desktop](./public/screenshots/desktop-showcase.png)
+![Punch'd Desktop](./public/screenshots/desktop-showcase.png)
 
 ## ✨ Features
 

@@ -1,8 +1,53 @@
 import { useState, useEffect } from 'react';
-import { Clock, PlayCircle, PauseCircle, Calculator, Save, CheckCircle } from 'lucide-react';
+import { Clock, PlayCircle, PauseCircle, Calculator, Save, CheckCircle, Users, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { timeEntriesService } from '../services/timeEntries';
 import LoginModal from './LoginModal';
+import MeetingModal from './MeetingModal';
+
+// Predefined sarcastic motivational quotes
+const quotes = [
+  "Congrats, you survived another day of logging.",
+  "Your boss will totally read this.",
+  "Hours logged. Motivation: not found.",
+  "Another productive log nobody cares about.",
+  "Impressive! You've successfully clocked in without crying.",
+  "You've been online too long. But go off.",
+  "Time flies when you're pretending to care.",
+  "Another log for the corporate overlords.",
+  "Well done, you've logged another snooze-fest.",
+  "Your paycheck thanks you for this log.",
+  "Logged in. Sanity: questionable.",
+  "Another masterpiece of time-wasting logged.",
+  "You've officially outlasted your coffee break.",
+  "Congrats on logging without a meltdown.",
+  "Time tracked. Soul: sold.",
+  "Another day, another log to ignore.",
+  "You're a logging legend—barely.",
+  "Clocked in. Now where's the exit?",
+  "Logged hours: proof you exist.",
+  "Another log to bore the archives.",
+  "You've mastered the art of logging naps.",
+  "Time logged. Productivity: TBD.",
+  "Congrats, you've logged past lunch!",
+  "Your log is now HR's problem.",
+  "Another day of logging survival unlocked.",
+  "Logged in. Brain: on standby.",
+  "You've logged enough to fake it.",
+  "Time tracked, enthusiasm lost.",
+  "Another log for the 'I tried' file.",
+  "You've clocked in like a champ—sort of.",
+  "Logged hours: a cry for help.",
+  "Another day, another log to forget.",
+  "You've survived logging purgatory.",
+  "Time logged. Coffee consumed: all of it.",
+  "Congrats on logging without quitting.",
+  "Your log is now a corporate artifact.",
+  "Another hour logged, another victory—kinda.",
+  "You've survived the logging grind again.",
+  "Logged in. Motivation: on vacation.",
+  "Another log to add to the chaos."
+];
 
 export default function TimeCalculator() {
     // Set default times
@@ -17,10 +62,156 @@ export default function TimeCalculator() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null); // 'success', 'error', or null
     const [pendingTimeData, setPendingTimeData] = useState(null);
+    const [meetingEntries, setMeetingEntries] = useState([]);
+    const [showMeetingModal, setShowMeetingModal] = useState(false);
+    // Quote display state
+    const [currentQuote, setCurrentQuote] = useState('');
+    const [showQuote, setShowQuote] = useState(false);
+    const [currentEffects, setCurrentEffects] = useState({
+        icon: '💬',
+        emoji1: '🙄',
+        emoji2: '😏',
+        sparkle1: '✨',
+        sparkle2: '💫',
+        sparkle3: '⭐'
+    });
+    const [quoteTimeout, setQuoteTimeout] = useState(null);
     const REQUIRED_HOURS = 8.5; // 8.5 hours required work time
     const STANDARD_BREAK_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 
     const { user } = useAuth();
+
+    // Function to show a random quote
+    const showRandomQuote = () => {
+        // Clear any existing timeout
+        if (quoteTimeout) {
+            clearTimeout(quoteTimeout);
+        }
+        
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        const effects = getQuoteEffects(randomQuote);
+        setCurrentQuote(randomQuote);
+        setCurrentEffects(effects);
+        setShowQuote(true);
+        
+        // Auto-dismiss after 8 seconds (increased from 4 seconds)
+        const newTimeout = setTimeout(() => {
+            setShowQuote(false);
+        }, 8000);
+        
+        setQuoteTimeout(newTimeout);
+    };
+
+    // Function to get random effects based on quote content
+    const getQuoteEffects = (quote) => {
+        const effects = {
+            icon: '💬',
+            emoji1: '🙄',
+            emoji2: '😏',
+            sparkle1: '✨',
+            sparkle2: '💫',
+            sparkle3: '⭐',
+            cardAnimation: 'animate-sarcastic-card',
+            textAnimation: 'animate-sarcastic-text',
+            subtitleAnimation: 'animate-sarcastic-subtitle'
+        };
+
+        // Different effect sets based on quote keywords
+        if (quote.toLowerCase().includes('boss') || quote.toLowerCase().includes('hr')) {
+            effects.icon = '👔';
+            effects.emoji1 = '😤';
+            effects.emoji2 = '🤦';
+            effects.sparkle1 = '💼';
+            effects.sparkle2 = '📊';
+            effects.sparkle3 = '📈';
+        } else if (quote.toLowerCase().includes('coffee') || quote.toLowerCase().includes('break')) {
+            effects.icon = '☕';
+            effects.emoji1 = '😴';
+            effects.emoji2 = '🥱';
+            effects.sparkle1 = '☕';
+            effects.sparkle2 = '🍵';
+            effects.sparkle3 = '💤';
+        } else if (quote.toLowerCase().includes('sanity') || quote.toLowerCase().includes('soul')) {
+            effects.icon = '🧠';
+            effects.emoji1 = '😵';
+            effects.emoji2 = '🤯';
+            effects.sparkle1 = '💭';
+            effects.sparkle2 = '🌀';
+            effects.sparkle3 = '💫';
+        } else if (quote.toLowerCase().includes('survive') || quote.toLowerCase().includes('survival')) {
+            effects.icon = '🛡️';
+            effects.emoji1 = '😰';
+            effects.emoji2 = '😅';
+            effects.sparkle1 = '⚡';
+            effects.sparkle2 = '🔥';
+            effects.sparkle3 = '💪';
+        } else if (quote.toLowerCase().includes('paycheck') || quote.toLowerCase().includes('money')) {
+            effects.icon = '💰';
+            effects.emoji1 = '🤑';
+            effects.emoji2 = '💸';
+            effects.sparkle1 = '💎';
+            effects.sparkle2 = '💵';
+            effects.sparkle3 = '🏦';
+        } else if (quote.toLowerCase().includes('crying') || quote.toLowerCase().includes('meltdown')) {
+            effects.icon = '😭';
+            effects.emoji1 = '😢';
+            effects.emoji2 = '🥺';
+            effects.sparkle1 = '💧';
+            effects.sparkle2 = '🌧️';
+            effects.sparkle3 = '☔';
+        } else if (quote.toLowerCase().includes('productivity') || quote.toLowerCase().includes('work')) {
+            effects.icon = '⚙️';
+            effects.emoji1 = '😤';
+            effects.emoji2 = '💪';
+            effects.sparkle1 = '🔧';
+            effects.sparkle2 = '⚡';
+            effects.sparkle3 = '🚀';
+        } else if (quote.toLowerCase().includes('boring') || quote.toLowerCase().includes('boredom')) {
+            effects.icon = '😴';
+            effects.emoji1 = '🥱';
+            effects.emoji2 = '😑';
+            effects.sparkle1 = '💤';
+            effects.sparkle2 = '🛏️';
+            effects.sparkle3 = '🌙';
+        } else if (quote.toLowerCase().includes('legend') || quote.toLowerCase().includes('champ')) {
+            effects.icon = '🏆';
+            effects.emoji1 = '😎';
+            effects.emoji2 = '🤴';
+            effects.sparkle1 = '👑';
+            effects.sparkle2 = '🏅';
+            effects.sparkle3 = '💎';
+        } else if (quote.toLowerCase().includes('chaos') || quote.toLowerCase().includes('madness')) {
+            effects.icon = '🌀';
+            effects.emoji1 = '🤪';
+            effects.emoji2 = '😵‍💫';
+            effects.sparkle1 = '💫';
+            effects.sparkle2 = '🌪️';
+            effects.sparkle3 = '⚡';
+        } else if (quote.toLowerCase().includes('time') || quote.toLowerCase().includes('clock')) {
+            effects.icon = '⏰';
+            effects.emoji1 = '😵';
+            effects.emoji2 = '🤔';
+            effects.sparkle1 = '🕐';
+            effects.sparkle2 = '⏳';
+            effects.sparkle3 = '⌛';
+        } else if (quote.toLowerCase().includes('corporate') || quote.toLowerCase().includes('overlords')) {
+            effects.icon = '🏢';
+            effects.emoji1 = '😈';
+            effects.emoji2 = '👹';
+            effects.sparkle1 = '💼';
+            effects.sparkle2 = '📊';
+            effects.sparkle3 = '📈';
+        } else if (quote.toLowerCase().includes('archive') || quote.toLowerCase().includes('forget')) {
+            effects.icon = '🗄️';
+            effects.emoji1 = '🤷';
+            effects.emoji2 = '😶';
+            effects.sparkle1 = '📁';
+            effects.sparkle2 = '🗂️';
+            effects.sparkle3 = '📋';
+        }
+
+        return effects;
+    };
 
     // Real-time updates every second
     useEffect(() => {
@@ -34,6 +225,15 @@ export default function TimeCalculator() {
 
         return () => clearInterval(interval);
     }, [calculationResults, checkOut, checkIn, breakIn, breakOut]);
+
+    // Cleanup timeout on component unmount
+    useEffect(() => {
+        return () => {
+            if (quoteTimeout) {
+                clearTimeout(quoteTimeout);
+            }
+        };
+    }, [quoteTimeout]);
 
     // Format time function - available globally in component
     const formatTime = (ms) => {
@@ -73,7 +273,8 @@ export default function TimeCalculator() {
             checkIn,
             checkOut,
             breakIn,
-            breakOut
+            breakOut,
+            meetingEntries
         });
 
         if (!timeData) return;
@@ -207,36 +408,93 @@ export default function TimeCalculator() {
                 }
             }
 
+            // Calculate meeting hours
+            let totalMeetingHours = 0;
+            let outsideWorkMeetings = 0;
+            
+            if (meetingEntries && meetingEntries.length > 0) {
+                meetingEntries.forEach(meeting => {
+                    if (meeting.start && meeting.end) {
+                        const meetingStart = toDate(meeting.start);
+                        const meetingEnd = toDate(meeting.end);
+                        
+                        if (meetingStart && meetingEnd && meetingEnd > meetingStart) {
+                            const meetingDuration = meetingEnd - meetingStart;
+                            totalMeetingHours += meetingDuration;
+                            
+                                                            // Check if meeting is outside work hours (before check-in or after expected work end)
+                                // If no check-out time, assume standard 8.5 hour workday
+                                const expectedWorkEnd = end ? actualEnd : new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + STANDARD_BREAK_DURATION);
+                                
+                                if (meetingStart < start || meetingEnd > expectedWorkEnd) {
+                                    outsideWorkMeetings += meetingDuration;
+                                }
+                        }
+                    }
+                });
+            }
+
             // Add break credit to worked time (if you take shorter break, you can leave early)
             workedMs += breakCredit;
 
             if (workedMs < 0) return;
 
-            const workedHours = workedMs / (1000 * 60 * 60);
-            const remainingHours = Math.max(0, REQUIRED_HOURS - workedHours);
+            // Add meeting hours to total worked time
+            const totalWorkedWithMeetings = workedMs + totalMeetingHours;
+            
+            // Adjust required hours if meetings are outside work hours
+            const adjustedRequiredHours = REQUIRED_HOURS - (outsideWorkMeetings / (1000 * 60 * 60));
+            const effectiveRequiredHours = Math.max(0, adjustedRequiredHours);
+            
+            const workedHours = totalWorkedWithMeetings / (1000 * 60 * 60);
+            const remainingHours = Math.max(0, effectiveRequiredHours - workedHours);
 
-            // Calculate expected leave time with break credit
+            // Calculate expected leave time with break credit and meeting adjustments
             let expectedLeaveTime;
+            
+            // Start with the base required time (8.5 hours)
+            const baseRequiredTime = REQUIRED_HOURS * 60 * 60 * 1000; // 8.5 hours in ms
+            
+            // Calculate the total time needed at work (including break)
+            let totalWorkTime;
             if (breakCredit > 0) {
                 // You have break credit, so you can leave earlier
-                const totalRequiredTime = REQUIRED_HOURS * 60 * 60 * 1000; // 8.5 hours in ms
                 const standardBreakTime = STANDARD_BREAK_DURATION; // 30 minutes in ms
-                const totalDayTime = totalRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
-                expectedLeaveTime = new Date(start.getTime() + totalDayTime);
+                totalWorkTime = baseRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
             } else if (actualBreakDuration > 0) {
                 // Break taken but no credit (break >= 30 mins)
-                expectedLeaveTime = new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + actualBreakDuration);
+                totalWorkTime = baseRequiredTime + actualBreakDuration;
             } else {
                 // No break planned or taken, use standard break assumption
-                expectedLeaveTime = new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + STANDARD_BREAK_DURATION);
+                totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
+            }
+            
+            // Calculate expected leave time from check-in
+            expectedLeaveTime = new Date(start.getTime() + totalWorkTime);
+            
+            // Subtract outside-work meetings from expected leave time
+            if (outsideWorkMeetings > 0) {
+                expectedLeaveTime = new Date(expectedLeaveTime.getTime() - outsideWorkMeetings);
+            }
+            
+            // Debug logging for meeting calculations (realtime)
+            if (meetingEntries && meetingEntries.length > 0) {
+                console.log('Realtime Meeting Calculation Debug:', {
+                    totalMeetingHours: formatTime(totalMeetingHours),
+                    outsideWorkMeetings: formatTime(outsideWorkMeetings),
+                    baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
+                    adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
+                    meetings: meetingEntries
+                });
             }
 
             setCalculationResults({
-                totalWorked: formatTime(workedMs),
+                totalWorked: formatTime(totalWorkedWithMeetings),
                 remainingTime: formatTime(remainingHours * 60 * 60 * 1000),
                 expectedLeaveTime: formatLeaveTime(expectedLeaveTime),
                 expectedLeaveTimeRaw: expectedLeaveTime, // Add raw Date object for database
                 breakInfo: breakInfo,
+                meetingHours: totalMeetingHours,
                 isLive: !end
             });
 
@@ -245,9 +503,12 @@ export default function TimeCalculator() {
         }
     };
 
-    const calculateTime = () => {
+        const calculateTime = () => {
         setIsCalculating(true);
-
+        
+        // Show random quote when calculation starts
+        showRandomQuote();
+        
         // Add animation delay for better UX
         setTimeout(() => {
             try {
@@ -317,6 +578,32 @@ export default function TimeCalculator() {
                     }
                 }
 
+                // Calculate meeting hours
+                let totalMeetingHours = 0;
+                let outsideWorkMeetings = 0;
+                
+                if (meetingEntries && meetingEntries.length > 0) {
+                    meetingEntries.forEach(meeting => {
+                        if (meeting.start && meeting.end) {
+                            const meetingStart = toDate(meeting.start);
+                            const meetingEnd = toDate(meeting.end);
+                            
+                            if (meetingStart && meetingEnd && meetingEnd > meetingStart) {
+                                const meetingDuration = meetingEnd - meetingStart;
+                                totalMeetingHours += meetingDuration;
+                                
+                                // Check if meeting is outside work hours (before check-in or after expected work end)
+                                // If no check-out time, assume standard 8.5 hour workday
+                                const expectedWorkEnd = end ? actualEnd : new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + STANDARD_BREAK_DURATION);
+                                
+                                if (meetingStart < start || meetingEnd > expectedWorkEnd) {
+                                    outsideWorkMeetings += meetingDuration;
+                                }
+                            }
+                        }
+                    });
+                }
+
                 // Add break credit to worked time (if you take shorter break, you can leave early)
                 workedMs += breakCredit;
 
@@ -328,31 +615,62 @@ export default function TimeCalculator() {
                     return;
                 }
 
-                const workedHours = workedMs / (1000 * 60 * 60);
-                const remainingHours = Math.max(0, REQUIRED_HOURS - workedHours);
+                // Add meeting hours to total worked time
+                const totalWorkedWithMeetings = workedMs + totalMeetingHours;
+                
+                // Adjust required hours if meetings are outside work hours
+                const adjustedRequiredHours = REQUIRED_HOURS - (outsideWorkMeetings / (1000 * 60 * 60));
+                const effectiveRequiredHours = Math.max(0, adjustedRequiredHours);
+                
+                const workedHours = totalWorkedWithMeetings / (1000 * 60 * 60);
+                const remainingHours = Math.max(0, effectiveRequiredHours - workedHours);
 
-                // Calculate expected leave time with break credit
+                // Calculate expected leave time with break credit and meeting adjustments
                 let expectedLeaveTime;
+                
+                // Start with the base required time (8.5 hours)
+                const baseRequiredTime = REQUIRED_HOURS * 60 * 60 * 1000; // 8.5 hours in ms
+                
+                // Calculate the total time needed at work (including break)
+                let totalWorkTime;
                 if (breakCredit > 0) {
                     // You have break credit, so you can leave earlier
-                    const totalRequiredTime = REQUIRED_HOURS * 60 * 60 * 1000; // 8.5 hours in ms
                     const standardBreakTime = STANDARD_BREAK_DURATION; // 30 minutes in ms
-                    const totalDayTime = totalRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
-                    expectedLeaveTime = new Date(start.getTime() + totalDayTime);
+                    totalWorkTime = baseRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
                 } else if (actualBreakDuration > 0) {
                     // Break taken but no credit (break >= 30 mins)
-                    expectedLeaveTime = new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + actualBreakDuration);
+                    totalWorkTime = baseRequiredTime + actualBreakDuration;
                 } else {
                     // No break planned or taken, use standard break assumption
-                    expectedLeaveTime = new Date(start.getTime() + (REQUIRED_HOURS * 60 * 60 * 1000) + STANDARD_BREAK_DURATION);
+                    totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
+                }
+                
+                // Calculate expected leave time from check-in
+                expectedLeaveTime = new Date(start.getTime() + totalWorkTime);
+                
+                // Subtract outside-work meetings from expected leave time
+                if (outsideWorkMeetings > 0) {
+                    expectedLeaveTime = new Date(expectedLeaveTime.getTime() - outsideWorkMeetings);
+                }
+                
+                // Debug logging for meeting calculations
+                if (meetingEntries && meetingEntries.length > 0) {
+                    console.log('Meeting Calculation Debug:', {
+                        totalMeetingHours: formatTime(totalMeetingHours),
+                        outsideWorkMeetings: formatTime(outsideWorkMeetings),
+                        baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
+                        adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
+                        meetings: meetingEntries
+                    });
                 }
 
                 setCalculationResults({
-                    totalWorked: formatTime(workedMs),
+                    totalWorked: formatTime(totalWorkedWithMeetings),
                     remainingTime: formatTime(remainingHours * 60 * 60 * 1000),
                     expectedLeaveTime: formatLeaveTime(expectedLeaveTime),
                     expectedLeaveTimeRaw: expectedLeaveTime, // Add raw Date object for database
                     breakInfo: breakInfo,
+                    meetingHours: totalMeetingHours,
                     isLive: !end
                 });
 
@@ -418,6 +736,43 @@ export default function TimeCalculator() {
                     ))}
                 </div>
 
+                {/* Meeting Hours Button - Style Option 3: Gradient Border with Animation */}
+                <button
+                    onClick={() => setShowMeetingModal(true)}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-gray-900/80 to-black/80 backdrop-blur-md text-purple-200 font-semibold hover:text-purple-100 transform transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-4 flex items-center justify-center space-x-2 relative overflow-hidden group"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(17,24,39,0.8) 0%, rgba(0,0,0,0.8) 100%)',
+                        border: '2px solid transparent',
+                        backgroundClip: 'padding-box'
+                    }}
+                >
+                    {/* Animated gradient border */}
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-gradient-x" style={{backgroundSize: '200% 200%'}}></div>
+                    
+                    {/* Inner background */}
+                    <div className="absolute inset-[2px] rounded-xl bg-gradient-to-r from-gray-900/90 to-black/90 backdrop-blur-md"></div>
+                    
+                    {/* Floating particles effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="absolute top-2 left-4 w-1 h-1 bg-purple-400 rounded-full animate-ping"></div>
+                        <div className="absolute top-4 right-6 w-1 h-1 bg-pink-400 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+                        <div className="absolute bottom-3 left-8 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+                    </div>
+                    
+                    <div className="relative flex items-center justify-center space-x-2">
+                        <div className="relative">
+                            <Users className="w-5 h-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 text-purple-300 group-hover:text-purple-200" />
+                            <div className="absolute -inset-2 bg-purple-500/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+                        </div>
+                        <span className="group-hover:text-purple-100 transition-colors duration-300 font-bold">Add Meeting Hours</span>
+                        {meetingEntries.length > 0 && (
+                            <span className="ml-2 px-3 py-1 bg-gradient-to-r from-purple-500/80 to-pink-500/80 rounded-full text-xs text-white font-bold shadow-lg border border-purple-300/30 group-hover:from-purple-400/90 group-hover:to-pink-400/90 transition-all duration-300">
+                                {meetingEntries.length} meeting{meetingEntries.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
+                </button>
+
                 {/* Clear Button */}
                 <button
                     onClick={() => {
@@ -425,6 +780,7 @@ export default function TimeCalculator() {
                         setCheckOut('');
                         setBreakIn('14:00');
                         setBreakOut('14:30');
+                        setMeetingEntries([]);
                         setCalculationResults(null);
                     }}
                     className="w-full py-3 rounded-xl bg-gray-800/60 backdrop-blur-sm border border-gray-600/50 text-gray-200 font-medium hover:bg-gray-700/60 transform transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-6"
@@ -500,9 +856,9 @@ export default function TimeCalculator() {
                         ) : (
                             <div className="space-y-4">
                                 {/* Expected Leave Time */}
-                                <div className="group relative bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-5 border border-purple-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/40 cursor-pointer">
-                                    <div className="relative z-10 flex items-center justify-between">
-                                        <div className="flex-1">
+                                <div className="group relative bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-5 border border-purple-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/20 hover:border-purple-400/40 cursor-pointer min-h-[100px]">
+                                    <div className="relative z-10 flex items-center justify-between h-full">
+                                        <div className="flex-1 flex flex-col justify-center">
                                             <p className="text-purple-300 text-sm font-medium group-hover:text-purple-200 transition-colors duration-300 mb-1">Expected Leave Time</p>
                                             <p className="text-white text-xl font-bold group-hover:text-purple-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
                                                 <span className="inline-block animate-pulse group-hover:animate-none transition-all duration-300 bg-gradient-to-r from-white via-purple-100 to-white bg-clip-text group-hover:from-purple-200 group-hover:via-white group-hover:to-purple-200 bg-[length:200%_100%] animate-gradient-x">
@@ -518,9 +874,9 @@ export default function TimeCalculator() {
                                 </div>
 
                                 {/* Total Worked Time */}
-                                <div className="group relative bg-gradient-to-r from-cyan-500/20 to-teal-500/20 backdrop-blur-sm rounded-xl p-5 border border-cyan-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/40 cursor-pointer">
-                                    <div className="relative z-10 flex items-center justify-between">
-                                        <div className="flex-1">
+                                <div className="group relative bg-gradient-to-r from-cyan-500/20 to-teal-500/20 backdrop-blur-sm rounded-xl p-5 border border-cyan-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/40 cursor-pointer min-h-[100px]">
+                                    <div className="relative z-10 flex items-center justify-between h-full">
+                                        <div className="flex-1 flex flex-col justify-center">
                                             <p className="text-cyan-300 text-sm font-medium group-hover:text-cyan-200 transition-colors duration-300 mb-1">Total Worked Time</p>
                                             <p className="text-white text-xl font-bold group-hover:text-cyan-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
                                                 <span className="inline-block animate-bounce group-hover:animate-pulse transition-all duration-300 bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text group-hover:from-cyan-200 group-hover:via-white group-hover:to-cyan-200 bg-[length:200%_100%] animate-gradient-x">
@@ -536,9 +892,9 @@ export default function TimeCalculator() {
                                 </div>
 
                                 {/* Time Remaining */}
-                                <div className="group relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-5 border border-pink-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/40 cursor-pointer">
-                                    <div className="relative z-10 flex items-center justify-between">
-                                        <div className="flex-1">
+                                <div className="group relative bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-5 border border-pink-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/20 hover:border-pink-400/40 cursor-pointer min-h-[100px]">
+                                    <div className="relative z-10 flex items-center justify-between h-full">
+                                        <div className="flex-1 flex flex-col justify-center">
                                             <p className="text-pink-300 text-sm font-medium group-hover:text-pink-200 transition-colors duration-300 mb-1">Time Until {REQUIRED_HOURS} Hours</p>
                                             <p className="text-white text-xl font-bold group-hover:text-pink-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
                                                 <span className="inline-block animate-pulse group-hover:animate-bounce transition-all duration-300 bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text group-hover:from-pink-200 group-hover:via-white group-hover:to-pink-200 bg-[length:200%_100%] animate-gradient-x">
@@ -553,11 +909,36 @@ export default function TimeCalculator() {
                                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                                 </div>
 
+                                {/* Meeting Hours */}
+                                {calculationResults.meetingHours > 0 && (
+                                    <div className="group relative bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-sm rounded-xl p-5 border border-indigo-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/20 hover:border-indigo-400/40 cursor-pointer min-h-[100px]">
+                                        <div className="relative z-10 flex items-center justify-between h-full">
+                                            <div className="flex-1 flex flex-col justify-center">
+                                                <p className="text-indigo-300 text-sm font-medium group-hover:text-indigo-200 transition-colors duration-300 mb-1">Meeting Hours</p>
+                                                <p className="text-white text-xl font-bold group-hover:text-indigo-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
+                                                    <span className="inline-block animate-pulse group-hover:animate-bounce transition-all duration-300 bg-gradient-to-r from-white via-indigo-100 to-white bg-clip-text group-hover:from-indigo-200 group-hover:via-white group-hover:to-indigo-200 bg-[length:200%_100%] animate-gradient-x">
+                                                        {formatTime(calculationResults.meetingHours)}
+                                                    </span>
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300 -z-10"></div>
+                                                </p>
+                                                {meetingEntries.length > 0 && (
+                                                    <p className="text-indigo-200/70 text-xs mt-2">
+                                                        {meetingEntries.length} meeting{meetingEntries.length !== 1 ? 's' : ''} scheduled
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="text-indigo-400 text-3xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300 flex items-center justify-center w-12 h-12">👥</div>
+                                        </div>
+                                        {/* Hover glow effect */}
+                                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                                    </div>
+                                )}
+
                                 {/* Break Credit Information */}
                                 {calculationResults.breakInfo && (
-                                    <div className="group relative bg-gradient-to-r from-orange-500/20 to-yellow-500/20 backdrop-blur-sm rounded-xl p-5 border border-orange-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/20 hover:border-orange-400/40 cursor-pointer">
-                                        <div className="relative z-10 flex items-center justify-between">
-                                            <div className="flex-1">
+                                    <div className="group relative bg-gradient-to-r from-orange-500/20 to-yellow-500/20 backdrop-blur-sm rounded-xl p-5 border border-orange-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/20 hover:border-orange-400/40 cursor-pointer min-h-[100px]">
+                                        <div className="relative z-10 flex items-center justify-between h-full">
+                                            <div className="flex-1 flex flex-col justify-center">
                                                 <p className="text-orange-300 text-sm font-medium group-hover:text-orange-200 transition-colors duration-300 mb-1">Break Credit (Leave Early)</p>
                                                 <p className="text-white text-xl font-bold group-hover:text-orange-100 transition-all duration-500 transform group-hover:scale-105 group-hover:tracking-wide relative">
                                                     <span className="inline-block animate-pulse group-hover:animate-bounce transition-all duration-300 bg-gradient-to-r from-white via-orange-100 to-white bg-clip-text group-hover:from-orange-200 group-hover:via-white group-hover:to-orange-200 bg-[length:200%_100%] animate-gradient-x">
@@ -578,9 +959,9 @@ export default function TimeCalculator() {
 
                                 {/* Status Information */}
                                 {calculationResults.isLive && (
-                                    <div className="group relative bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-5 border border-green-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/20 hover:border-green-400/40 cursor-pointer">
-                                        <div className="relative z-10 flex items-center justify-between">
-                                            <div className="flex-1">
+                                    <div className="group relative bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl p-5 border border-green-500/20 transform transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-lg hover:shadow-green-500/20 hover:border-green-400/40 cursor-pointer min-h-[100px]">
+                                        <div className="relative z-10 flex items-center justify-between h-full">
+                                            <div className="flex-1 flex flex-col justify-center">
                                                 <p className="text-green-300 text-sm font-medium group-hover:text-green-200 transition-colors duration-300 flex items-center mb-1">
                                                     Status
                                                     <span className="ml-2 relative flex h-2 w-2">
@@ -649,6 +1030,90 @@ export default function TimeCalculator() {
                 }}
                 onSuccess={handleLoginSuccess}
             />
+
+            {/* Meeting Modal */}
+            <MeetingModal
+                isOpen={showMeetingModal}
+                onClose={() => setShowMeetingModal(false)}
+                onSave={(meetings) => {
+                    setMeetingEntries(meetings);
+                    setShowMeetingModal(false);
+                    // Recalculate if we have existing results
+                    if (calculationResults) {
+                        calculateTime();
+                    }
+                }}
+                initialMeetings={meetingEntries}
+            />
+
+            {/* Floating Quote Display */}
+            {showQuote && (
+                <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 max-w-sm md:max-w-md transform transition-all duration-500 animate-fade-in-up">
+                    {/* Smoke Effects */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        {/* Smoke particles */}
+                        <div className="absolute -top-2 -left-2 w-2 h-2 bg-gray-400/30 rounded-full animate-smoke-1"></div>
+                        <div className="absolute -top-4 left-4 w-1.5 h-1.5 bg-gray-300/40 rounded-full animate-smoke-2"></div>
+                        <div className="absolute -top-6 left-8 w-1 h-1 bg-gray-500/35 rounded-full animate-smoke-3"></div>
+                        <div className="absolute -top-3 right-4 w-1.5 h-1.5 bg-gray-400/30 rounded-full animate-smoke-4"></div>
+                        <div className="absolute -top-5 right-8 w-1 h-1 bg-gray-300/40 rounded-full animate-smoke-5"></div>
+                        <div className="absolute -top-8 left-12 w-1 h-1 bg-gray-500/35 rounded-full animate-smoke-6"></div>
+                        <div className="absolute -top-10 right-12 w-1 h-1 bg-gray-400/30 rounded-full animate-smoke-7"></div>
+                        <div className="absolute -top-12 left-16 w-1 h-1 bg-gray-300/40 rounded-full animate-smoke-8"></div>
+                        
+                        {/* Additional smoke wisps */}
+                        <div className="absolute -top-4 left-2 w-3 h-1 bg-gradient-to-r from-transparent via-gray-400/20 to-transparent rounded-full animate-smoke-wisp-1"></div>
+                        <div className="absolute -top-6 right-2 w-2 h-1 bg-gradient-to-r from-transparent via-gray-300/25 to-transparent rounded-full animate-smoke-wisp-2"></div>
+                        <div className="absolute -top-8 left-6 w-2.5 h-1 bg-gradient-to-r from-transparent via-gray-500/15 to-transparent rounded-full animate-smoke-wisp-3"></div>
+                    </div>
+                    
+                    <div className="relative bg-gradient-to-br from-gray-900/90 via-black/80 to-gray-900/90 backdrop-blur-2xl rounded-2xl p-6 md:p-8 border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] transform hover:scale-105 transition-all duration-300 animate-sarcastic-card"
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,20,20,0.95) 50%, rgba(0,0,0,0.9) 100%)',
+                            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        }}>
+                        
+                        {/* Sarcastic eye roll effect */}
+                        <div className="absolute -top-1 -left-1 md:-top-2 md:-left-2 text-xl md:text-2xl animate-eye-roll">{currentEffects.emoji1}</div>
+                        <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 text-xl md:text-2xl animate-eye-roll-delayed">{currentEffects.emoji2}</div>
+                        
+                        {/* Sarcastic sparkles */}
+                        <div className="absolute top-1 left-1/4 md:top-2 md:left-1/4 text-base md:text-lg animate-sparkle-1">{currentEffects.sparkle1}</div>
+                        <div className="absolute top-3 right-1/3 md:top-4 md:right-1/3 text-base md:text-lg animate-sparkle-2">{currentEffects.sparkle2}</div>
+                        <div className="absolute bottom-1 left-1/3 md:bottom-2 md:left-1/3 text-base md:text-lg animate-sparkle-3">{currentEffects.sparkle3}</div>
+                        
+                        {/* Close button */}
+                        <button
+                            onClick={() => {
+                                if (quoteTimeout) {
+                                    clearTimeout(quoteTimeout);
+                                    setQuoteTimeout(null);
+                                }
+                                setShowQuote(false);
+                            }}
+                            className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 rounded-full bg-gray-800/60 hover:bg-gray-700/60 text-gray-400 hover:text-white transition-all duration-300 hover:scale-110"
+                        >
+                            <X className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
+                        
+                        {/* Quote content */}
+                        <div className="text-center">
+                            <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4 md:mb-6 transform transition-all duration-300 hover:rotate-12 hover:scale-110 animate-bounce">
+                                <span className="text-2xl md:text-3xl animate-pulse">{currentEffects.icon}</span>
+                            </div>
+                            <p className="text-white text-lg md:text-xl font-medium leading-relaxed bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-3 md:mb-4 animate-sarcastic-text">
+                                "{currentQuote}"
+                            </p>
+                            <div className="text-xs md:text-sm text-gray-400 animate-sarcastic-subtitle">
+                                Punch'd Wisdom
+                            </div>
+                        </div>
+                        
+                        {/* Animated gradient border */}
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 opacity-0 hover:opacity-100 transition-opacity duration-500 animate-gradient-x pointer-events-none"></div>
+                    </div>
+                </div>
+            )}
 
             <style jsx>{`
         @keyframes fade-in-up {

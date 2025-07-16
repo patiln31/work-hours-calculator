@@ -45,13 +45,14 @@
 office-hours-calculator/
 ├── src/
 │   ├── components/           # Reusable UI components
-│   │   ├── TimeCalculator.jsx (941 lines) - Core calculation logic
+│   │   ├── TimeCalculator.jsx (1033 lines) - Core calculation logic
 │   │   ├── Navigation.jsx (175 lines) - Responsive navigation
-│   │   ├── Dashboard.jsx (371 lines) - Analytics dashboard
+│   │   ├── Dashboard.jsx (586 lines) - Analytics dashboard
 │   │   ├── WeatherQuotes.jsx (411 lines) - Weather integration
 │   │   ├── WorkLifeFacts.jsx (235 lines) - Educational content
 │   │   ├── LoginModal.jsx (182 lines) - Authentication UI
-│   │   ├── ManualEntryModal.jsx (238 lines) - Time entry editing
+│   │   ├── MeetingModal.jsx (175 lines) - Meeting hours management
+│   │   ├── ManualEntryModal.jsx (284 lines) - Time entry editing
 │   │   ├── EditHistoryModal.jsx (237 lines) - Change history
 │   │   ├── UserSelector.jsx (109 lines) - Admin user switching
 │   │   └── ProtectedRoute.jsx (53 lines) - Route protection
@@ -81,6 +82,7 @@ office-hours-calculator/
 - Expected leave time calculation (8.5-hour target)
 - Overnight shift support (24-hour operations)
 - Break credit system for shorter breaks
+- Meeting hours integration with outside-work adjustment
 - Visual status indicators with color coding
 
 **Technical Implementation:**
@@ -100,10 +102,26 @@ useEffect(() => {
 if (plannedBreakDuration < STANDARD_BREAK_DURATION && plannedBreakDuration > 0) {
     breakCredit = STANDARD_BREAK_DURATION - plannedBreakDuration;
 }
+
+// Meeting hours calculation
+let totalMeetingHours = 0;
+let outsideWorkMeetings = 0;
+meetingEntries.forEach(meeting => {
+    if (meeting.start && meeting.end) {
+        const meetingDuration = meetingEnd - meetingStart;
+        totalMeetingHours += meetingDuration;
+        
+        // Adjust required hours if meeting is outside work hours
+        if (meetingStart < start || meetingEnd > actualEnd) {
+            outsideWorkMeetings += meetingDuration;
+        }
+    }
+});
 ```
 
 **State Management:**
 - `checkIn`, `checkOut`, `breakIn`, `breakOut` - Time inputs
+- `meetingEntries` - Meeting time entries array
 - `calculationResults` - Computed time data
 - `currentTime` - Live clock updates
 - `isCalculating`, `isSaving` - Loading states
@@ -143,9 +161,10 @@ const AuthProvider = ({ children }) => {
 - Monthly calendar view with time entry visualization
 - Interactive charts using Recharts
 - Statistics calculation and display
-- Manual entry creation/editing
+- Manual entry creation/editing with meeting support
 - Edit history with undo functionality
 - Admin multi-user view
+- Meeting hours column in time entries table
 
 **Chart Implementation:**
 ```javascript
@@ -220,6 +239,8 @@ CREATE TABLE time_entries (
     break_duration_minutes INTEGER,
     break_credit_minutes INTEGER,
     expected_leave_time TIME,
+    meeting_hours DECIMAL(4,2),
+    meeting_data JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(user_id, date)

@@ -347,6 +347,7 @@ export default function Dashboard() {
                         <th className="text-left py-4 px-3 text-gray-300 font-semibold">Check In</th>
                         <th className="text-left py-4 px-3 text-gray-300 font-semibold">Check Out</th>
                         <th className="text-left py-4 px-3 text-gray-300 font-semibold">Break</th>
+                        <th className="text-left py-4 px-3 text-gray-300 font-semibold">Meeting Hours</th>
                         <th className="text-left py-4 px-3 text-gray-300 font-semibold">Total Hours</th>
                         <th className="text-center py-4 px-3 text-gray-300 font-semibold">Actions</th>
                       </tr>
@@ -378,6 +379,13 @@ export default function Dashboard() {
                                 ? `${formatTime(entry.break_in)} - ${formatTime(entry.break_out)}`
                                 : '--'
                               }
+                            </td>
+                            <td className="py-4 px-3 text-gray-300">
+                              {entry.meeting_hours ? (
+                                <span className="text-indigo-400 font-medium">
+                                  {formatHours(entry.meeting_hours)}
+                                </span>
+                              ) : '--'}
                             </td>
                             <td className="py-4 px-3">
                               <span className={`font-semibold ${

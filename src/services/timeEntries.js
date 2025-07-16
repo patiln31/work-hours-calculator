@@ -22,6 +22,8 @@ export const timeEntriesService = {
         break_duration_minutes: timeData.breakDurationMinutes || null,
         break_credit_minutes: timeData.breakCreditMinutes || null,
         expected_leave_time: timeData.expectedLeaveTime || null,
+        meeting_hours: timeData.meetingHours || null,
+        meeting_data: timeData.meetingData || null,
         updated_at: new Date().toISOString()
       }
 
@@ -172,6 +174,8 @@ export const timeEntriesService = {
         break_duration_minutes: entryData.breakDurationMinutes || null,
         break_credit_minutes: entryData.breakCreditMinutes || null,
         expected_leave_time: entryData.expectedLeaveTime || null,
+        meeting_hours: entryData.meetingHours || null,
+        meeting_data: entryData.meetingData || null,
         updated_at: new Date().toISOString()
       }
 
@@ -318,6 +322,8 @@ export const timeEntriesService = {
           break_duration_minutes: previousData.break_duration_minutes,
           break_credit_minutes: previousData.break_credit_minutes,
           expected_leave_time: previousData.expected_leave_time,
+          meeting_hours: previousData.meeting_hours,
+          meeting_data: previousData.meeting_data,
           updated_at: new Date().toISOString()
         })
         .eq('id', timeEntryId)
@@ -391,6 +397,10 @@ export const timeEntriesService = {
     const breakCreditMinutes = calculationResults.breakInfo ? 
       Math.round((calculationResults.breakInfo.credit || 0) / (1000 * 60)) : null
 
+    // Parse meeting hours
+    const meetingHours = calculationResults.meetingHours ? 
+      Math.round((calculationResults.meetingHours / (1000 * 60 * 60)) * 100) / 100 : null
+
     return {
       checkIn: timeInputs.checkIn || null,
       checkOut: timeInputs.checkOut || null,
@@ -399,7 +409,9 @@ export const timeEntriesService = {
       totalHours: parseHours(calculationResults.totalWorked),
       breakDurationMinutes,
       breakCreditMinutes,
-      expectedLeaveTime: formatExpectedLeaveTime(calculationResults.expectedLeaveTimeRaw)
+      expectedLeaveTime: formatExpectedLeaveTime(calculationResults.expectedLeaveTimeRaw),
+      meetingHours,
+      meetingData: timeInputs.meetingEntries || null
     }
   }
 } 

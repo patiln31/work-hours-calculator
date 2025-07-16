@@ -1,6 +1,6 @@
 # Supabase Integration Setup Guide
 
-This guide will help you set up Supabase authentication and database for your Office Hours Calculator app.
+This guide will help you set up Supabase authentication and database for your Punch'd app.
 
 ## 🚀 Features Added
 
@@ -14,7 +14,7 @@ This guide will help you set up Supabase authentication and database for your Of
 
 1. Supabase account (free tier is sufficient)
 2. Node.js and npm installed
-3. Your existing Office Hours Calculator project
+3. Your existing Punch'd project
 
 ## 🔧 Supabase Project Setup
 
@@ -67,6 +67,8 @@ CREATE TABLE time_entries (
   break_duration_minutes INTEGER,
   break_credit_minutes INTEGER,
   expected_leave_time TIME,
+  meeting_hours DECIMAL(4,2),
+  meeting_data JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, date)

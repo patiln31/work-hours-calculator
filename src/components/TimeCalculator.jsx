@@ -57,9 +57,6 @@ const gifUrls = [
     "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWFsb3k5dTRqMDUwY3d6djdvNThkcGZ1ZWcyM25kd3k2cmxwOGc1ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Rng7sDG4dkmyWev2qx/giphy.gif",
     "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2VyMzRlbXJlNGlmZWVjdmhjYzQxaGF3OWs2b2xrZTg5NnhsN3locCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9sEmlm8kV4PSM/giphy.gif",
     "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHEyc3EwODR6enRoNXprNTB6M2FtMHVkcnMxdTI0NmdnODAyeXI5ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/duh9qIgB0Ghfif8uPE/giphy.gif",
-    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjducTRhdGd3ZXd3NXlhNXczdzkxcDJ4azZzNHZzNWhwbWM0YzdhaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZYE6pw8tktY0N1GaEV/giphy.gif",
-    
-    // New GIFs you provided
     "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3g2andwaXJzemEzdHkzcW01ODg3MnUzYTN1b3o0b2NmNjlnYjJzeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1KVaj5UcbHwrBMqI/giphy.gif",
     "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeDg2NHprMGU5dTQ1NGtvenRjeTdreTkwbmY2NmtndXR1Y2s0NjBoeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d2lcHJTG5Tscg/giphy.gif",
     "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDhvZm80b3BuNWZ4eHhzbGVqbmgxZDF2emRjd3BmNGJuMml0M3NqaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/c9Dc3WfvF6itUKAhgX/giphy.gif",

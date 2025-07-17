@@ -49,6 +49,28 @@ const quotes = [
   "Another log to add to the chaos."
 ];
 
+// Updated working GIF URLs - now with 15 different GIFs for more variety
+const gifUrls = [
+    // Original GIFs
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmp2eHR2Mm1qdWs5NnBra3pmajd0N21ubG84cWdkNHZieWJkM3ZjYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7kn27lnYSAE9O/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHB0MnQ1b3U0bjQ3ZnUxNXh1bnJjcjB3NmY0b2p5MnE4cXU2NzE5cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/uzRClpaS8q7lOBcdxf/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWFsb3k5dTRqMDUwY3d6djdvNThkcGZ1ZWcyM25kd3k2cmxwOGc1ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Rng7sDG4dkmyWev2qx/giphy.gif",
+    "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2VyMzRlbXJlNGlmZWVjdmhjYzQxaGF3OWs2b2xrZTg5NnhsN3locCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9sEmlm8kV4PSM/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHEyc3EwODR6enRoNXprNTB6M2FtMHVkcnMxdTI0NmdnODAyeXI5ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/duh9qIgB0Ghfif8uPE/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjducTRhdGd3ZXd3NXlhNXczdzkxcDJ4azZzNHZzNWhwbWM0YzdhaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZYE6pw8tktY0N1GaEV/giphy.gif",
+    
+    // New GIFs you provided
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3g2andwaXJzemEzdHkzcW01ODg3MnUzYTN1b3o0b2NmNjlnYjJzeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1KVaj5UcbHwrBMqI/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeDg2NHprMGU5dTQ1NGtvenRjeTdreTkwbmY2NmtndXR1Y2s0NjBoeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d2lcHJTG5Tscg/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDhvZm80b3BuNWZ4eHhzbGVqbmgxZDF2emRjd3BmNGJuMml0M3NqaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/c9Dc3WfvF6itUKAhgX/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2cxMzB1OGNuZ2Y4b3RqamJ5OGRtZGI4dXBhYXVkYTlxcDRiajRsYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IejVI3NqwKEG78skNG/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHN6YmlzaTh3aWlvcXdudnVmaGp6d2VsbjkyMjZzYTZhYThobTUyMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kEKcOWl8RMLde/giphy.gif",
+    "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExd25pNnlxNG1kNjVmc2dkY2hpcDE2aDYyaXczM2ZraTBrbW81dW12aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3orifbyEPffgtYnnA4/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXV4a3lwZzQxM21odnpndW04YWtqd25vZHRoc2Z5MDBsODFxNmc1MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jxrjnm4vRCfyIKdzfl/giphy.gif",
+    "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnlrc2lkOHR4bDFodG1jdHJqaG16cmd2MTNodzFpZ3RtbzZheGtjZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8Wub2WCMscABvWt3DP/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGRiZnkwNzFtbndvMzFxMm0zcDR0eWdmYXJzcjFuZW1lMjFlZTJrZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/haEpZ7eLjtZM4/giphy.gif"
+];
+
 export default function TimeCalculator() {
     // Set default times
     const [checkIn, setCheckIn] = useState('10:00');
@@ -78,6 +100,12 @@ export default function TimeCalculator() {
     const [quoteTimeout, setQuoteTimeout] = useState(null);
     const REQUIRED_HOURS = 8.5; // 8.5 hours required work time
     const STANDARD_BREAK_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+    // Simplified state for random GIF
+    const [currentGif, setCurrentGif] = useState('');
+    const [showGif, setShowGif] = useState(false);
+    const [gifTimeout, setGifTimeout] = useState(null);
+    const [lastGifTime, setLastGifTime] = useState(0);
 
     const { user } = useAuth();
 
@@ -685,9 +713,96 @@ export default function TimeCalculator() {
         }, 1000);
     };
 
-    return (
-        <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 relative">
+    // Optimized function to show random GIF
+    const showRandomGif = () => {
+        // Clear any existing timeout
+        if (gifTimeout) {
+            clearTimeout(gifTimeout);
+        }
+        
+        const randomGif = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+        setCurrentGif(randomGif);
+        setShowGif(true);
+        setLastGifTime(Date.now());
+        
+        // Auto-hide after 10 seconds
+        const newTimeout = setTimeout(() => {
+            setShowGif(false);
+        }, 10000);
+        
+        setGifTimeout(newTimeout);
+    };
 
+    // Function to handle calculate button click with GIF logic
+    const handleCalculateClick = () => {
+        calculateTime();
+        
+        const currentTime = Date.now();
+        const timeSinceLastGif = currentTime - lastGifTime;
+        
+        // Show new GIF if:
+        // 1. No GIF is currently showing, OR
+        // 2. Last GIF was shown more than 2.5 seconds ago
+        if (!showGif || timeSinceLastGif > 2500) {
+            if (Math.random() < 0.7) { // 70% chance
+                showRandomGif();
+            }
+        }
+    };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (gifTimeout) {
+                clearTimeout(gifTimeout);
+            }
+        };
+    }, [gifTimeout]);
+
+    return (
+        <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden">
+            
+            {/* Optimized Random GIF Component */}
+            {showGif && (
+                <div className="fixed top-32 left-6 z-50 transition-all duration-300 ease-out">
+                    <div className="relative">
+                        {/* Simplified glassmorphism container */}
+                        <div className="bg-gray-900/90 backdrop-blur-md rounded-2xl border border-gray-700/50 shadow-2xl p-4 transform transition-all duration-300 hover:scale-105">
+                            {/* Close button */}
+                            <button
+                                onClick={() => {
+                                    setShowGif(false);
+                                    if (gifTimeout) {
+                                        clearTimeout(gifTimeout);
+                                    }
+                                }}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold transition-all duration-200 hover:scale-110 z-10"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                            
+                            {/* GIF with optimized size */}
+                            <img 
+                                src={currentGif} 
+                                alt="Random motivation GIF"
+                                className="w-56 h-40 object-cover rounded-xl shadow-lg"
+                                onError={(e) => {
+                                    console.log('GIF failed to load, hiding component');
+                                    setShowGif(false);
+                                    if (gifTimeout) {
+                                        clearTimeout(gifTimeout);
+                                    }
+                                }}
+                            />
+                            
+                            {/* Minimal glow effect - only on hover */}
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Main calculator card */}
             <div className="relative bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] border border-gray-700/50 p-8 w-full max-w-2xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_0_rgba(0,0,0,0.8)]"
                 style={{
                     background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
@@ -700,7 +815,7 @@ export default function TimeCalculator() {
                         <Clock className="w-10 h-10 text-white animate-pulse" />
                     </div>
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-3">
-                        Time Calculator
+                        TimeTrap Calculator
                     </h2>
                     <p className="text-gray-300 text-lg">Track your working hours with precision ⚡</p>
                 </div>
@@ -773,7 +888,7 @@ export default function TimeCalculator() {
                     </div>
                 </button>
 
-                {/* Clear Button */}
+                {/* Optimized Clear Button */}
                 <button
                     onClick={() => {
                         setCheckIn('10:00');
@@ -783,14 +898,33 @@ export default function TimeCalculator() {
                         setMeetingEntries([]);
                         setCalculationResults(null);
                     }}
-                    className="w-full py-3 rounded-xl bg-gray-800/60 backdrop-blur-sm border border-gray-600/50 text-gray-200 font-medium hover:bg-gray-700/60 transform transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-6"
+                    className="group relative w-full py-3 rounded-xl bg-gradient-to-r from-red-500/20 via-orange-500/20 to-yellow-500/20 backdrop-blur-sm border border-red-400/30 text-white font-medium transform transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-6 overflow-hidden"
                 >
-                    Clear All Fields
+                    {/* Simplified background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-orange-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    {/* Reduced particle effects */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute top-2 left-4 w-1 h-1 bg-red-400 rounded-full animate-ping"></div>
+                        <div className="absolute bottom-2 right-4 w-1 h-1 bg-yellow-400 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+                    </div>
+                    
+                    {/* Button content */}
+                    <div className="relative flex items-center justify-center z-10">
+                        <span className="mr-2 text-lg group-hover:rotate-12 transition-transform duration-300">🧹</span>
+                        <span className="text-white font-semibold group-hover:text-red-100 transition-all duration-300 relative z-10">
+                            Clear All Fields
+                        </span>
+                        <span className="ml-2 text-lg group-hover:-rotate-12 transition-transform duration-300">✨</span>
+                    </div>
+                    
+                    {/* Simplified border animation */}
+                    <div className="absolute inset-0 rounded-xl border-2 border-transparent bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-border opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
 
-                {/* Calculate Button with loading animation */}
+                {/* Calculate Button with loading animation - Enhanced GIF trigger */}
                 <button
-                    onClick={calculateTime}
+                    onClick={handleCalculateClick}
                     disabled={isCalculating}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white font-semibold shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-[1.02] active:scale-95 relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed mb-4"
                 >
@@ -1105,7 +1239,7 @@ export default function TimeCalculator() {
                                 "{currentQuote}"
                             </p>
                             <div className="text-xs md:text-sm text-gray-400 animate-sarcastic-subtitle">
-                                Punch'd Wisdom
+                                TimeTrap Wisdom
                             </div>
                         </div>
                         

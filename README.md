@@ -1,8 +1,8 @@
-# 🕐 Punch'd
+# 🕐 TimeTrap
 
 A beautiful, responsive web application for tracking working hours with precision. Features real-time weather integration, interactive animations, and a stunning glassmorphism UI design.
 
-![Punch'd Desktop](./public/screenshots/desktop-showcase.png)
+![TimeTrap Desktop](./public/screenshots/desktop-showcase.png)
 
 ## ✨ Features
 

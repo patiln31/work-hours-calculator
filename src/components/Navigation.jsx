@@ -31,7 +31,7 @@ export default function Navigation() {
                 <Clock className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent hidden sm:block">
-                Punch'd
+                TimeTrap
               </span>
             </Link>
 

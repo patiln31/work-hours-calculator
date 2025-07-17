@@ -1,6 +1,6 @@
-# Supabase Integration Setup Guide
+# Supabase Setup Guide
 
-This guide will help you set up Supabase authentication and database for your Punch'd app.
+This guide will help you set up Supabase authentication and database for your TimeTrap app.
 
 ## 🚀 Features Added
 
@@ -14,7 +14,7 @@ This guide will help you set up Supabase authentication and database for your Pu
 
 1. Supabase account (free tier is sufficient)
 2. Node.js and npm installed
-3. Your existing Punch'd project
+3. Your existing TimeTrap project
 
 ## 🔧 Supabase Project Setup
 

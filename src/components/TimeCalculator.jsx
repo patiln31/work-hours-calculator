@@ -422,7 +422,8 @@ export default function TimeCalculator() {
                     }
 
                     // Calculate break credit based on planned break (regardless of whether it happened yet)
-                    if (plannedBreakDuration < STANDARD_BREAK_DURATION && plannedBreakDuration > 0) {
+                    if (plannedBreakDuration <= STANDARD_BREAK_DURATION && plannedBreakDuration > 0) {
+                        // If break is 30 minutes or less, you get credit for the difference
                         breakCredit = STANDARD_BREAK_DURATION - plannedBreakDuration;
                         breakInfo = {
                             actualBreak: plannedBreakDuration,
@@ -488,7 +489,17 @@ export default function TimeCalculator() {
                 totalWorkTime = baseRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
             } else if (actualBreakDuration > 0) {
                 // Break taken but no credit (break >= 30 mins)
+                // Add the full break duration to the base time
                 totalWorkTime = baseRequiredTime + actualBreakDuration;
+            } else if (bIn && bOut && bOut > bIn) {
+                // Break is planned but hasn't happened yet, use planned break duration
+                const plannedBreakDuration = bOut - bIn;
+                if (plannedBreakDuration > 0 && plannedBreakDuration < 4 * 60 * 60 * 1000) {
+                    totalWorkTime = baseRequiredTime + plannedBreakDuration;
+                } else {
+                    // No break planned or taken, use standard break assumption
+                    totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
+                }
             } else {
                 // No break planned or taken, use standard break assumption
                 totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
@@ -502,16 +513,21 @@ export default function TimeCalculator() {
                 expectedLeaveTime = new Date(expectedLeaveTime.getTime() - outsideWorkMeetings);
             }
             
-            // Debug logging for meeting calculations (realtime)
-            if (meetingEntries && meetingEntries.length > 0) {
-                console.log('Realtime Meeting Calculation Debug:', {
+            // Debug logging for break and meeting calculations (realtime)
+            console.log('Realtime Calculation Debug:', {
+                plannedBreakDuration: formatTime(bIn && bOut ? bOut - bIn : 0),
+                standardBreakDuration: formatTime(STANDARD_BREAK_DURATION),
+                breakCredit: formatTime(breakCredit),
+                actualBreakDuration: formatTime(actualBreakDuration),
+                totalWorkTime: formatTime(totalWorkTime),
+                baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
+                adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
+                meetings: meetingEntries && meetingEntries.length > 0 ? {
                     totalMeetingHours: formatTime(totalMeetingHours),
                     outsideWorkMeetings: formatTime(outsideWorkMeetings),
-                    baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
-                    adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
                     meetings: meetingEntries
-                });
-            }
+                } : 'No meetings'
+            });
 
             setCalculationResults({
                 totalWorked: formatTime(totalWorkedWithMeetings),
@@ -592,7 +608,8 @@ export default function TimeCalculator() {
                         }
 
                         // Calculate break credit based on planned break (regardless of whether it happened yet)
-                        if (plannedBreakDuration < STANDARD_BREAK_DURATION && plannedBreakDuration > 0) {
+                        if (plannedBreakDuration <= STANDARD_BREAK_DURATION && plannedBreakDuration > 0) {
+                            // If break is 30 minutes or less, you get credit for the difference
                             breakCredit = STANDARD_BREAK_DURATION - plannedBreakDuration;
                             breakInfo = {
                                 actualBreak: plannedBreakDuration,
@@ -664,7 +681,17 @@ export default function TimeCalculator() {
                     totalWorkTime = baseRequiredTime + standardBreakTime - breakCredit; // Subtract break credit
                 } else if (actualBreakDuration > 0) {
                     // Break taken but no credit (break >= 30 mins)
+                    // Add the full break duration to the base time
                     totalWorkTime = baseRequiredTime + actualBreakDuration;
+                } else if (bIn && bOut && bOut > bIn) {
+                    // Break is planned but hasn't happened yet, use planned break duration
+                    const plannedBreakDuration = bOut - bIn;
+                    if (plannedBreakDuration > 0 && plannedBreakDuration < 4 * 60 * 60 * 1000) {
+                        totalWorkTime = baseRequiredTime + plannedBreakDuration;
+                    } else {
+                        // No break planned or taken, use standard break assumption
+                        totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
+                    }
                 } else {
                     // No break planned or taken, use standard break assumption
                     totalWorkTime = baseRequiredTime + STANDARD_BREAK_DURATION;
@@ -678,16 +705,21 @@ export default function TimeCalculator() {
                     expectedLeaveTime = new Date(expectedLeaveTime.getTime() - outsideWorkMeetings);
                 }
                 
-                // Debug logging for meeting calculations
-                if (meetingEntries && meetingEntries.length > 0) {
-                    console.log('Meeting Calculation Debug:', {
+                // Debug logging for break and meeting calculations
+                console.log('Calculation Debug:', {
+                    plannedBreakDuration: formatTime(bIn && bOut ? bOut - bIn : 0),
+                    standardBreakDuration: formatTime(STANDARD_BREAK_DURATION),
+                    breakCredit: formatTime(breakCredit),
+                    actualBreakDuration: formatTime(actualBreakDuration),
+                    totalWorkTime: formatTime(totalWorkTime),
+                    baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
+                    adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
+                    meetings: meetingEntries && meetingEntries.length > 0 ? {
                         totalMeetingHours: formatTime(totalMeetingHours),
                         outsideWorkMeetings: formatTime(outsideWorkMeetings),
-                        baseExpectedLeave: formatLeaveTime(new Date(start.getTime() + totalWorkTime)),
-                        adjustedExpectedLeave: formatLeaveTime(expectedLeaveTime),
                         meetings: meetingEntries
-                    });
-                }
+                    } : 'No meetings'
+                });
 
                 setCalculationResults({
                     totalWorked: formatTime(totalWorkedWithMeetings),

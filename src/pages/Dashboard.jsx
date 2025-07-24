@@ -727,195 +727,132 @@ export default function Dashboard() {
           line-height: 1 !important;
         }
 
-        /* FIXED Navigation - Simple approach for month display */
+        /* ========================================
+           CLEAN CALENDAR NAVIGATION - FROM SCRATCH 
+           ======================================== */
+
+        /* Base Navigation Container */
         .calendar-container .react-calendar-dark .react-calendar__navigation {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)) !important;
-          border-radius: 16px !important;
-          margin-bottom: 1.5rem !important;
-          padding: 10px !important;
-          display: grid !important;
-          grid-template-columns: 40px 40px 1fr 40px 40px !important;
-          gap: 8px !important;
+          background: rgba(0, 0, 0, 0.4) !important;
+          border-radius: 12px !important;
+          margin-bottom: 1.2rem !important;
+          padding: 10px 16px !important;
+          display: flex !important;
           align-items: center !important;
+          justify-content: space-between !important;
           position: relative !important;
-          z-index: 70 !important;
           backdrop-filter: blur(15px) !important;
-          border: 1px solid rgba(139, 92, 246, 0.3) !important;
-          box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15) !important;
-          height: 64px !important;
+          border: 1px solid rgba(255, 255, 255, 0.15) !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+          height: 56px !important;
           width: 100% !important;
-          max-width: 100% !important;
           box-sizing: border-box !important;
         }
 
-        /* Navigation buttons */
+        /* Navigation Buttons */
         .calendar-container .react-calendar-dark .react-calendar__navigation button {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(236, 72, 153, 0.6)) !important;
-          color: white !important;
-          border: none !important;
-          border-radius: 12px !important;
-          font-size: 14px !important;
-          font-weight: 700 !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: rgba(255, 255, 255, 0.9) !important;
+          border: 1px solid rgba(255, 255, 255, 0.15) !important;
+          border-radius: 8px !important;
+          font-size: 18px !important;
+          font-weight: 600 !important;
           width: 40px !important;
           height: 40px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           cursor: pointer !important;
-          transition: all 0.3s ease !important;
-          backdrop-filter: blur(10px) !important;
-          box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+          transition: all 0.2s ease !important;
           flex-shrink: 0 !important;
-          margin: 0 !important;
+          margin: 0 2px !important;
           padding: 0 !important;
         }
 
+        /* Navigation Button Hover */
         .calendar-container .react-calendar-dark .react-calendar__navigation button:hover {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(236, 72, 153, 0.8)) !important;
-          transform: translateY(-2px) scale(1.05) !important;
-          box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4) !important;
-          border-radius: 16px !important;
+          background: rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
+          transform: translateY(-1px) !important;
         }
 
-        /* CLEANED Month/Year label - Remove all conflicts */
+        /* Month/Year Label */
         .calendar-container .react-calendar-dark .react-calendar__navigation__label {
-          text-align: center !important;
-          font-weight: 800 !important;
-          font-size: 14px !important;
+          font-size: 18px !important;
+          font-weight: 700 !important;
           color: white !important;
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15)) !important;
-          border: 1px solid rgba(139, 92, 246, 0.3) !important;
-          cursor: pointer !important;
-          border-radius: 12px !important;
-          transition: all 0.3s ease !important;
-          backdrop-filter: blur(10px) !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 10px !important;
           height: 40px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          margin: 0 !important;
-          padding: 0 12px !important;
-          white-space: nowrap !important;
-          overflow: visible !important;
-          min-width: 100px !important;
+          margin: 0 8px !important;
+          padding: 0 20px !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
           flex: 1 !important;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-          letter-spacing: 0.5px !important;
+          max-width: 180px !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          box-sizing: border-box !important;
         }
 
-        /* Remove ALL pseudo-elements and custom content */
-        .calendar-container .react-calendar-dark .react-calendar__navigation__label::before,
-        .calendar-container .react-calendar-dark .react-calendar__navigation__label::after {
-          content: none !important;
-          display: none !important;
-        }
-
-        /* Make sure the actual text content is visible */
-        .calendar-container .react-calendar-dark .react-calendar__navigation__label span {
-          display: inline !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-          color: white !important;
-        }
-
+        /* Month Label Hover */
         .calendar-container .react-calendar-dark .react-calendar__navigation__label:hover {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(236, 72, 153, 0.25)) !important;
-          border-color: rgba(139, 92, 246, 0.5) !important;
-          transform: translateY(-1px) !important;
-          border-radius: 16px !important;
+          background: rgba(255, 255, 255, 0.15) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
         }
 
-        /* Ensure all navigation buttons are properly sized */
-        .calendar-container .react-calendar-dark .react-calendar__navigation__prev,
-        .calendar-container .react-calendar-dark .react-calendar__navigation__prev2,
-        .calendar-container .react-calendar-dark .react-calendar__navigation__next,
-        .calendar-container .react-calendar-dark .react-calendar__navigation__next2 {
-          width: 40px !important;
-          height: 40px !important;
-          min-width: 40px !important;
-          min-height: 40px !important;
-          max-width: 40px !important;
-          max-height: 40px !important;
-          flex-shrink: 0 !important;
-          flex-grow: 0 !important;
-        }
+        /* ========================================
+           MOBILE RESPONSIVE NAVIGATION
+           ======================================== */
 
-        /* Ensure calendar container has proper constraints */
-        .calendar-container {
-          width: 100% !important;
-          max-width: 100% !important;
-          overflow: visible !important;
-          box-sizing: border-box !important;
-        }
-
-        .calendar-container .react-calendar-dark {
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-        }
-
-        /* Mobile responsive fixes */
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .calendar-container .react-calendar-dark .react-calendar__navigation {
-            grid-template-columns: 36px 36px 1fr 36px 36px !important;
-            height: 56px !important;
-            padding: 8px !important;
-            gap: 6px !important;
+            height: 50px !important;
+            padding: 8px 12px !important;
+            border-radius: 10px !important;
           }
 
           .calendar-container .react-calendar-dark .react-calendar__navigation button {
             width: 36px !important;
             height: 36px !important;
-            font-size: 12px !important;
+            font-size: 16px !important;
+            margin: 0 1px !important;
           }
 
           .calendar-container .react-calendar-dark .react-calendar__navigation__label {
+            font-size: 16px !important;
             height: 36px !important;
-            font-size: 12px !important;
-            padding: 0 6px !important;
-          }
-
-          .h-18 {
-            height: 4rem !important; /* 64px on mobile */
+            padding: 0 16px !important;
+            margin: 0 6px !important;
+            max-width: calc(100% - 160px) !important;
           }
         }
 
-        /* Very small screens - ensure text still fits */
         @media (max-width: 480px) {
           .calendar-container .react-calendar-dark .react-calendar__navigation {
-            grid-template-columns: 32px 32px 1fr 32px 32px !important;
-            height: 52px !important;
-            padding: 6px !important;
-            gap: 4px !important;
+            height: 44px !important;
+            padding: 6px 8px !important;
           }
 
           .calendar-container .react-calendar-dark .react-calendar__navigation button {
             width: 32px !important;
             height: 32px !important;
-            min-width: 32px !important;
-            min-height: 32px !important;
-            max-width: 32px !important;
-            max-height: 32px !important;
-            font-size: 11px !important;
+            font-size: 14px !important;
+            margin: 0 !important;
           }
 
           .calendar-container .react-calendar-dark .react-calendar__navigation__label {
+            font-size: 14px !important;
             height: 32px !important;
-            font-size: 12px !important;
-            padding: 0 6px !important;
-            min-width: 70px !important;
-          }
-
-          .calendar-container .react-calendar-dark .react-calendar__navigation__prev,
-          .calendar-container .react-calendar-dark .react-calendar__navigation__prev2,
-          .calendar-container .react-calendar-dark .react-calendar__navigation__next,
-          .calendar-container .react-calendar-dark .react-calendar__navigation__next2 {
-            width: 32px !important;
-            height: 32px !important;
-            min-width: 32px !important;
-            min-height: 32px !important;
-            max-width: 32px !important;
-            max-height: 32px !important;
+            padding: 0 12px !important;
+            margin: 0 4px !important;
+            max-width: calc(100% - 140px) !important;
           }
         }
 
@@ -1273,11 +1210,82 @@ export default function Dashboard() {
           filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.5)) !important;
         }
 
-        /* Mobile responsive adjustments */
+        /* ========================================
+           MOBILE CHART ENHANCEMENTS
+           ======================================== */
+
+        /* Tablet responsive adjustments */
+        @media (max-width: 1024px) {
+          .chart-container {
+            padding: 20px !important;
+            border-radius: 22px !important;
+          }
+        }
+
+        /* Mobile responsive adjustments - More space utilization */
+        @media (max-width: 768px) {
+          .chart-container {
+            padding: 18px !important;
+            border-radius: 20px !important;
+            margin: 0 -4px !important; /* Expand beyond container padding */
+          }
+
+          .chart-container .relative.z-10 {
+            width: 100% !important;
+          }
+
+          .recharts-xaxis .recharts-cartesian-axis-tick-value,
+          .recharts-yaxis .recharts-cartesian-axis-tick-value {
+            font-size: 11px !important;
+          }
+        }
+
+        /* Small mobile devices - Maximum space utilization */
         @media (max-width: 640px) {
           .chart-container {
             padding: 16px !important;
-            border-radius: 20px !important;
+            border-radius: 18px !important;
+            margin: 0 -8px !important; /* Expand even more on small screens */
+          }
+
+          .chart-container .relative.z-10 {
+            width: 100% !important;
+            overflow-x: auto !important;
+          }
+
+          .chart-container .h-80 {
+            height: 280px !important; /* Slightly reduce height for mobile */
+          }
+
+          .recharts-xaxis .recharts-cartesian-axis-tick-value,
+          .recharts-yaxis .recharts-cartesian-axis-tick-value {
+            font-size: 10px !important;
+          }
+        }
+
+        /* Extra small devices - Optimize for very narrow screens */
+        @media (max-width: 480px) {
+          .chart-container {
+            padding: 14px !important;
+            border-radius: 16px !important;
+            margin: 0 -12px !important; /* Maximum expansion for tiny screens */
+          }
+
+          .chart-container .h-80 {
+            height: 240px !important; /* Compact height for small screens */
+          }
+
+          .chart-container .flex.items-center.mb-6 {
+            margin-bottom: 1rem !important; /* Reduce header spacing */
+          }
+
+          .chart-container .flex.items-center.mb-6 h2 {
+            font-size: 1.125rem !important; /* Smaller title on mobile */
+          }
+
+          .recharts-xaxis .recharts-cartesian-axis-tick-value,
+          .recharts-yaxis .recharts-cartesian-axis-tick-value {
+            font-size: 9px !important;
           }
         }
 
@@ -1312,58 +1320,6 @@ export default function Dashboard() {
 
         .calendar-container .react-calendar-dark .react-calendar__navigation > *:nth-child(5) {
           grid-column: 5 !important;
-        }
-
-        /* Enhanced chart container with glassmorphism */
-        .chart-container {
-          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9)) !important;
-          backdrop-filter: blur(20px) !important;
-          border: 1px solid rgba(75, 85, 99, 0.4) !important;
-          border-radius: 24px !important;
-          padding: 24px !important;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-          position: relative !important;
-          overflow: hidden !important;
-        }
-
-        .chart-container::before {
-          content: '' !important;
-          position: absolute !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(236, 72, 153, 0.05)) !important;
-          pointer-events: none !important;
-        }
-
-        /* Enhanced chart styling */
-        .recharts-bar-rectangle {
-          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) !important;
-        }
-
-        .recharts-cartesian-grid line {
-          stroke: rgba(75, 85, 99, 0.3) !important;
-          stroke-dasharray: 3 3 !important;
-        }
-
-        .recharts-xaxis .recharts-cartesian-axis-tick-value,
-        .recharts-yaxis .recharts-cartesian-axis-tick-value {
-          fill: #9CA3AF !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-        }
-
-        .recharts-tooltip-wrapper {
-          filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.5)) !important;
-        }
-
-        /* Mobile responsive adjustments */
-        @media (max-width: 640px) {
-          .chart-container {
-            padding: 16px !important;
-            border-radius: 20px !important;
-          }
         }
       `}</style>
 

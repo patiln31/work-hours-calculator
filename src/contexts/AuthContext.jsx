@@ -25,8 +25,7 @@ export const AuthProvider = ({ children }) => {
         
         // Check if user is admin
         if (session?.user?.email) {
-          const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
-          setIsAdmin(session.user.email === adminEmail)
+          setIsAdmin(session.user.email === 'nilesh_patil@acedataanalytics.com')
         }
       } catch (error) {
         console.error('Error getting session:', error)
@@ -44,8 +43,7 @@ export const AuthProvider = ({ children }) => {
         
         // Check if user is admin
         if (session?.user?.email) {
-          const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
-          setIsAdmin(session.user.email === adminEmail)
+          setIsAdmin(session.user.email === 'nilesh_patil@acedataanalytics.com')
         } else {
           setIsAdmin(false)
         }

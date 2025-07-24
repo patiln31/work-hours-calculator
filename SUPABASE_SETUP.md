@@ -115,25 +115,25 @@ CREATE POLICY "Users can insert own edit history"
   ON time_entries_history FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
--- Admin users can view all entries (replace with your admin email)
+-- Admin users can view all entries
 CREATE POLICY "Admin can view all time entries" 
   ON time_entries FOR ALL 
   USING (
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'your-admin-email@company.com'
+      AND auth.users.email = 'nilesh_patil@acedataanalytics.com'
     )
   );
 
--- Admin users can view all edit history (replace with your admin email)
+-- Admin users can view all edit history
 CREATE POLICY "Admin can view all edit history" 
   ON time_entries_history FOR ALL 
   USING (
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'your-admin-email@company.com'
+      AND auth.users.email = 'nilesh_patil@acedataanalytics.com'
     )
   );
 

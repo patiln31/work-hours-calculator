@@ -2,7 +2,98 @@ import { supabase } from '../lib/supabase'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 
 export const timeEntriesService = {
-  // Save or update a time entry for today
+  // Dynamic user fetching - automatically includes new users
+  async getUsersWithEntries() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Check if current user is admin
+      if (user.email !== 'nilesh_patil@acedataanalytics.com') {
+        throw new Error('Unauthorized: Admin access required');
+      }
+
+      // Use the dynamic RPC function
+      const { data, error } = await supabase
+        .rpc('get_admin_user_emails');
+
+      if (error) throw error;
+      
+      console.log('Dynamically fetched users:', data);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching users dynamically:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Dynamic monthly entries with automatic user detection
+  async getMonthlyEntries(year, month, userId = null) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      let targetUserId = user.id
+
+      if (userId) {
+        // Verify user exists and admin has permission
+        if (user.email !== 'nilesh_patil@acedataanalytics.com') {
+          throw new Error('Unauthorized: Admin access required')
+        }
+        
+        // Verify the target user exists by checking if they have any time entries
+        const { data: userExists, error: userCheckError } = await supabase
+          .from('time_entries')
+          .select('user_id')
+          .eq('user_id', userId)
+          .limit(1)
+
+        if (userCheckError) throw userCheckError
+        
+        if (!userExists || userExists.length === 0) {
+          throw new Error('User not found or has no time entries')
+        }
+        
+        targetUserId = userId
+      }
+
+      const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .eq('user_id', targetUserId)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false })
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      console.error('Error fetching monthly entries:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
+  // Dynamic user profile fetching
+  async getUserProfile(userId) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { data, error } = await supabase
+        .rpc('get_user_profile_by_id', { target_user_id: userId })
+
+      if (error) throw error
+      return { success: true, data: data?.[0] || null }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
+  // Enhanced save function that automatically creates user associations
   async saveTimeEntry(timeData) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -10,7 +101,6 @@ export const timeEntriesService = {
 
       const today = format(new Date(), 'yyyy-MM-dd')
       
-      // Parse time data from the calculator
       const entry = {
         user_id: user.id,
         date: today,
@@ -27,7 +117,7 @@ export const timeEntriesService = {
         updated_at: new Date().toISOString()
       }
 
-      // Use upsert to insert or update
+      // Use upsert - this automatically handles new users
       const { data, error } = await supabase
         .from('time_entries')
         .upsert(entry, { 
@@ -36,6 +126,10 @@ export const timeEntriesService = {
         })
 
       if (error) throw error
+      
+      // Log for admin monitoring
+      console.log('Time entry saved for user:', user.id, user.email)
+      
       return { success: true, data }
     } catch (error) {
       console.error('Error saving time entry:', error)
@@ -43,49 +137,80 @@ export const timeEntriesService = {
     }
   },
 
-  // Get time entries for a specific month
-  async getMonthlyEntries(year, month, userId = null) {
+  // Dynamic manual entry saving with user validation
+  async saveManualTimeEntry(entryData, selectedDate, userId = null) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Use provided userId for admin view, otherwise use current user
-      const targetUserId = userId || user.id
+      let targetUserId = user.id
 
-      const startDate = startOfMonth(new Date(year, month - 1))
-      const endDate = endOfMonth(new Date(year, month - 1))
+      if (userId) {
+        // Only admins can create entries for other users
+        if (user.email !== 'nilesh_patil@acedataanalytics.com') {
+          throw new Error('Unauthorized: Only admins can create entries for other users')
+        }
+        targetUserId = userId
+      }
 
-      let query = supabase
+      const dateStr = format(new Date(selectedDate), 'yyyy-MM-dd')
+      const totalHours = this.calculateTotalHours(entryData, entryData.meetingHours)
+
+      const entry = {
+        user_id: targetUserId,
+        date: dateStr,
+        check_in: entryData.checkIn || null,
+        check_out: entryData.checkOut || null,
+        break_in: entryData.breakIn || null,
+        break_out: entryData.breakOut || null,
+        total_hours: totalHours,
+        break_duration_minutes: entryData.breakDurationMinutes || null,
+        break_credit_minutes: entryData.breakCreditMinutes || null,
+        expected_leave_time: entryData.expectedLeaveTime || null,
+        meeting_hours: entryData.meetingHours || null,
+        meeting_data: entryData.meetingData || null,
+        updated_at: new Date().toISOString()
+      }
+
+      const { data, error } = await supabase
         .from('time_entries')
-        .select('*')
-        .eq('user_id', targetUserId)
-        .gte('date', format(startDate, 'yyyy-MM-dd'))
-        .lte('date', format(endDate, 'yyyy-MM-dd'))
-        .order('date', { ascending: false })
-
-      const { data, error } = await query
+        .upsert(entry, { 
+          onConflict: 'user_id,date',
+          returning: 'representation'
+        })
 
       if (error) throw error
-      return { success: true, data }
+      
+      console.log('Manual entry saved for user:', targetUserId)
+      return { success: true, data: data?.[0] }
     } catch (error) {
-      console.error('Error fetching monthly entries:', error)
+      console.error('Error saving manual time entry:', error)
       return { success: false, error: error.message }
     }
   },
 
-  // Get time entry for a specific date
+  // Get time entry for a specific date - Direct query
   async getEntryByDate(date, userId = null) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const targetUserId = userId || user.id
+      let targetUserId = user.id;
+
+      if (userId) {
+        if (user.email !== 'nilesh_patil@acedataanalytics.com') {
+          throw new Error('Unauthorized: Admin access required');
+        }
+        targetUserId = userId;
+      }
+
+      const dateStr = new Date(date).toISOString().split('T')[0];
 
       const { data, error } = await supabase
         .from('time_entries')
         .select('*')
         .eq('user_id', targetUserId)
-        .eq('date', format(new Date(date), 'yyyy-MM-dd'))
+        .eq('date', dateStr)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error // PGRST116 is "not found"
@@ -150,53 +275,8 @@ export const timeEntriesService = {
     }
   },
 
-  // Save or update manual time entry for any date
-  async saveManualTimeEntry(entryData, selectedDate, userId = null) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      // For admin editing other users' entries
-      const targetUserId = userId || user.id
-      const dateStr = format(new Date(selectedDate), 'yyyy-MM-dd')
-
-      // Calculate total hours
-      const totalHours = this.calculateTotalHours(entryData)
-
-      const entry = {
-        user_id: targetUserId,
-        date: dateStr,
-        check_in: entryData.checkIn || null,
-        check_out: entryData.checkOut || null,
-        break_in: entryData.breakIn || null,
-        break_out: entryData.breakOut || null,
-        total_hours: totalHours,
-        break_duration_minutes: entryData.breakDurationMinutes || null,
-        break_credit_minutes: entryData.breakCreditMinutes || null,
-        expected_leave_time: entryData.expectedLeaveTime || null,
-        meeting_hours: entryData.meetingHours || null,
-        meeting_data: entryData.meetingData || null,
-        updated_at: new Date().toISOString()
-      }
-
-      // Use upsert to insert or update
-      const { data, error } = await supabase
-        .from('time_entries')
-        .upsert(entry, { 
-          onConflict: 'user_id,date',
-          returning: 'representation'
-        })
-
-      if (error) throw error
-      return { success: true, data: data?.[0] }
-    } catch (error) {
-      console.error('Error saving manual time entry:', error)
-      return { success: false, error: error.message }
-    }
-  },
-
-  // Calculate total working hours from time inputs
-  calculateTotalHours(timeData) {
+  // Calculate total working hours from time inputs, including meeting hours if provided
+  calculateTotalHours(timeData, meetingHours = 0) {
     if (!timeData.checkIn || !timeData.checkOut) return null
 
     try {
@@ -227,7 +307,14 @@ export const timeEntriesService = {
       }
 
       // Convert to hours with 2 decimal places
-      return Math.round((workedMinutes / 60) * 100) / 100
+      let total = Math.round((workedMinutes / 60) * 100) / 100
+
+      // Add meeting hours if provided
+      if (meetingHours && !isNaN(meetingHours)) {
+        total += parseFloat(meetingHours)
+      }
+
+      return Math.round(total * 100) / 100
     } catch (error) {
       console.error('Error calculating total hours:', error)
       return null
@@ -274,6 +361,22 @@ export const timeEntriesService = {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
+      // First check if user has permission to view this time entry
+      const { data: timeEntry, error: timeEntryError } = await supabase
+        .from('time_entries')
+        .select('user_id')
+        .eq('id', timeEntryId)
+        .single()
+
+      if (timeEntryError) throw timeEntryError
+
+      // Check if user owns this entry or is admin
+      const isAdmin = user.email === 'nilesh_patil@acedataanalytics.com'
+      if (timeEntry.user_id !== user.id && !isAdmin) {
+        throw new Error('Unauthorized: Cannot view edit history for this entry')
+      }
+
+      // Now fetch the edit history
       const { data, error } = await supabase
         .from('time_entries_history')
         .select('*')
@@ -293,6 +396,20 @@ export const timeEntriesService = {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
+
+      // Check permissions first
+      const { data: timeEntry, error: timeEntryError } = await supabase
+        .from('time_entries')
+        .select('user_id')
+        .eq('id', timeEntryId)
+        .single()
+
+      if (timeEntryError) throw timeEntryError
+
+      const isAdmin = user.email === 'nilesh_patil@acedataanalytics.com'
+      if (timeEntry.user_id !== user.id && !isAdmin) {
+        throw new Error('Unauthorized: Cannot undo edits for this entry')
+      }
 
       // Get the most recent edit history
       const { data: history, error: historyError } = await supabase
@@ -333,37 +450,6 @@ export const timeEntriesService = {
       return { success: true, data: data?.[0] }
     } catch (error) {
       console.error('Error undoing last edit:', error)
-      return { success: false, error: error.message }
-    }
-  },
-
-  // Get users for admin view
-  async getUsersWithEntries() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      // Check if user is admin
-      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL
-      if (user.email !== adminEmail) {
-        throw new Error('Unauthorized: Admin access required')
-      }
-
-      // Get unique users with their emails from time_entries and auth.users
-      // Since we can't directly query auth.users, we'll get user_ids and fetch profiles
-      const { data: entries, error } = await supabase
-        .from('time_entries')
-        .select('user_id')
-        .order('user_id')
-
-      if (error) throw error
-
-      // Get unique user IDs
-      const uniqueUserIds = [...new Set(entries.map(entry => entry.user_id))]
-      
-      return { success: true, data: uniqueUserIds }
-    } catch (error) {
-      console.error('Error fetching users with entries:', error)
       return { success: false, error: error.message }
     }
   },

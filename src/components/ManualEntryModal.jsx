@@ -53,15 +53,31 @@ export default function ManualEntryModal({
     setCalculatedHours(null)
   }, [existingEntry, isOpen])
 
-  // Auto-calculate hours when times change
+  // Auto-calculate hours when times or meetings change
   useEffect(() => {
     if (formData.checkIn && formData.checkOut) {
-      const hours = timeEntriesService.calculateTotalHours(formData)
+      // Calculate meeting hours
+      let meetingHours = 0
+      if (meetingEntries && meetingEntries.length > 0) {
+        let totalMeetingMs = 0
+        meetingEntries.forEach(meeting => {
+          if (meeting.start && meeting.end) {
+            const startTime = new Date(`1970-01-01T${meeting.start}:00`)
+            const endTime = new Date(`1970-01-01T${meeting.end}:00`)
+            if (endTime > startTime) {
+              totalMeetingMs += endTime - startTime
+            }
+          }
+        })
+        meetingHours = Math.round((totalMeetingMs / (1000 * 60 * 60)) * 100) / 100
+      }
+      // Use the updated service function to include meeting hours
+      const hours = timeEntriesService.calculateTotalHours(formData, meetingHours)
       setCalculatedHours(hours)
     } else {
       setCalculatedHours(null)
     }
-  }, [formData])
+  }, [formData, meetingEntries])
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({

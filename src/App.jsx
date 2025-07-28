@@ -7,6 +7,7 @@ import WeatherQuotes from './components/WeatherQuotes'
 import Dashboard from './pages/Dashboard'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
+import SplashCursor from './components/SplashCursor'
 
 // Home component for the main calculator
 function Home() {
@@ -139,6 +140,7 @@ function App() {
     <AuthProvider>
       <Router basename="/work-hours-calculator">
         <div className="min-h-screen">
+          <SplashCursor />
           <Navigation />
           <Routes>
             <Route path="/" element={<Home />} />

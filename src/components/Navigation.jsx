@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Clock, BarChart3, LogOut, User, Menu, X } from 'lucide-react'
+import { Clock, BarChart3, Settings, LogOut, User, Menu, X } from 'lucide-react'
 import LoginModal from './LoginModal'
 
 export default function Navigation() {
@@ -17,7 +17,10 @@ export default function Navigation() {
 
   const navItems = [
     { path: '/', label: 'Calculator', icon: Clock },
-    ...(user ? [{ path: '/dashboard', label: 'Dashboard', icon: BarChart3 }] : [])
+    ...(user ? [
+      { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+      { path: '/settings', label: 'Settings', icon: Settings }
+    ] : [])
   ]
 
   return (
@@ -44,7 +47,7 @@ export default function Navigation() {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-300 ${
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-colors duration-150 ${
                       isActive
                         ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 text-white border border-purple-500/30'
                         : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
@@ -61,22 +64,22 @@ export default function Navigation() {
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800/60 rounded-xl border border-gray-600/50">
-                    <User className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm text-white truncate max-w-32">
+                  <div className="flex items-center space-x-2 px-3 py-2 bg-gray-800/60 rounded-xl border border-gray-600/50 transform hover:scale-[1.02] transition-all duration-200 hover:bg-gray-800/80 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer group">
+                    <User className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors duration-200" />
+                    <span className="text-sm text-white truncate max-w-32 group-hover:text-purple-100 transition-colors duration-200">
                       {user.email}
                     </span>
                     {isAdmin && (
-                      <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md">
+                      <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md group-hover:bg-yellow-500/30 group-hover:text-yellow-300 transition-all duration-200">
                         Admin
                       </span>
                     )}
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-red-500/20 rounded-xl transition-all duration-300"
+                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-red-500/20 rounded-xl transition-all duration-200 hover:shadow-md hover:shadow-red-500/10 group"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 transition-transform duration-200" />
                     <span className="text-sm">Sign Out</span>
                   </button>
                 </div>
@@ -112,7 +115,7 @@ export default function Navigation() {
                       key={item.path}
                       to={item.path}
                       onClick={() => setShowMobileMenu(false)}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 ${
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors duration-150 ${
                         isActive
                           ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 text-white border border-purple-500/30'
                           : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
@@ -128,20 +131,20 @@ export default function Navigation() {
                 <div className="pt-4 border-t border-gray-700/50 mt-4">
                   {user ? (
                     <div className="space-y-3">
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800/60 rounded-xl border border-gray-600/50">
-                        <User className="w-5 h-5 text-purple-400" />
+                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800/60 rounded-xl border border-gray-600/50 transition-all duration-200 hover:bg-gray-800/80 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/10 cursor-pointer group">
+                        <User className="w-5 h-5 text-purple-400 group-hover:text-purple-300 transition-colors duration-200" />
                         <div className="flex-1">
-                          <div className="text-white text-sm truncate">{user.email}</div>
+                          <div className="text-white text-sm truncate group-hover:text-purple-100 transition-colors duration-300">{user.email}</div>
                           {isAdmin && (
-                            <div className="text-xs text-yellow-400">Admin User</div>
+                            <div className="text-xs text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300">Admin User</div>
                           )}
                         </div>
                       </div>
                       <button
                         onClick={handleSignOut}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-red-500/20 rounded-xl transition-all duration-300"
+                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-red-500/20 rounded-xl transition-all duration-200 hover:shadow-md hover:shadow-red-500/10 group"
                       >
-                        <LogOut className="w-5 h-5" />
+                        <LogOut className="w-5 h-5 transition-transform duration-200" />
                         <span>Sign Out</span>
                       </button>
                     </div>

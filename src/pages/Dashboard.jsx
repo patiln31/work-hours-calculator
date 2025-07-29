@@ -4,10 +4,11 @@ import { timeEntriesService } from '../services/timeEntries'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import Calendar from 'react-calendar'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
-import { Calendar as CalendarIcon, Clock, Users, TrendingUp, AlertTriangle, Edit, History, Plus, Trash2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, Users, TrendingUp, AlertTriangle, Edit, History, Plus, Trash2, FileSpreadsheet, Download } from 'lucide-react'
 import ManualEntryModal from '../components/ManualEntryModal'
 import EditHistoryModal from '../components/EditHistoryModal'
 import UserSelector from '../components/UserSelector'
+import { excelExportService } from '../services/excelExport';
 
 export default function Dashboard() {
   const { user, isAdmin } = useAuth()
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [editingEntry, setEditingEntry] = useState(null)
   const [historyEntry, setHistoryEntry] = useState(null)
   const [selectedDateEntry, setSelectedDateEntry] = useState(null)
+  const [isExporting, setIsExporting] = useState(false);
 
   // Enhanced user change handler
   const handleUserChange = (userId) => {
@@ -136,6 +138,28 @@ export default function Dashboard() {
     await loadSelectedDateEntry()
   }
 
+  const handleExportToExcel = async () => {
+    setIsExporting(true);
+    try {
+      const stats = timeEntriesService.calculateMonthlyStats(monthlyEntries);
+      await excelExportService.exportTimeEntriesToExcel(
+        monthlyEntries, 
+        stats, 
+        { 
+          month: format(currentMonth, 'MMMM yyyy') 
+        }
+      );
+      
+      // Optional: Add success notification here
+      console.log('Export completed successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      // Optional: Add error notification here
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Calculate monthly statistics
   const monthlyStats = timeEntriesService.calculateMonthlyStats(monthlyEntries)
 
@@ -173,7 +197,7 @@ export default function Dashboard() {
       <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 xl:px-12 xl:py-12 2xl:px-16 2xl:py-16 max-w-[1600px] mx-auto">
         
         {/* Header - Responsive sizing */}
-        <div className="text-center mb-4 sm:mb-6 lg:mb-8">
+        <div className="text-center mb-4 sm:mb-6 lg:mb-8 mt-15">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-2xl mb-3 sm:mb-4">
             <TrendingUp className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
           </div>
@@ -370,6 +394,46 @@ export default function Dashboard() {
           {/* Right Column - Data & Charts - More space */}
           <div className="lg:col-span-7 xl:col-span-9 space-y-4 sm:space-y-6">
             
+            {/* Export Section - Above Time Entries Table */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-xl rounded-xl border border-gray-700/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Export Data
+                  </h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Download your time entries as an Excel file with formatting and summary statistics
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handleExportToExcel}
+                  disabled={isExporting || monthlyEntries.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none"
+                >
+                  {isExporting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <FileSpreadsheet className="w-4 h-4" />
+                      Export to Excel
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              {monthlyEntries.length === 0 && (
+                <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-sm text-yellow-400">
+                    No data available for export. Please save some time entries first.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Time Entries Table */}
             <div className="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-700/50"
               style={{

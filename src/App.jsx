@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AnimationProvider, useAnimation } from './contexts/AnimationContext'
 import TimeCalculator from './components/TimeCalculator'
 import WorkLifeFacts from './components/WorkLifeFacts'
 import WeatherQuotes from './components/WeatherQuotes'
 import Dashboard from './pages/Dashboard'
+import Settings from './pages/Settings'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
 import SplashCursor from './components/SplashCursor'
@@ -135,26 +137,44 @@ function Home() {
   )
 }
 
+function AppContent() {
+  const { shouldShowAnimation } = useAnimation()
+  
+  return (
+    <div className="min-h-screen">
+      {shouldShowAnimation && <SplashCursor />}
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </div>
+  )
+}
+
 function App() {
   return (
     <AuthProvider>
-      <Router basename="/work-hours-calculator">
-        <div className="min-h-screen">
-          <SplashCursor />
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </div>
-      </Router>
+      <AnimationProvider>
+        <Router basename="/work-hours-calculator">
+          <AppContent />
+        </Router>
+      </AnimationProvider>
     </AuthProvider>
   )
 }

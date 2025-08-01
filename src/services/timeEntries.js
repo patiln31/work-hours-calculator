@@ -57,8 +57,10 @@ export const timeEntriesService = {
         targetUserId = userId
       }
 
-      const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+      const startDate = format(startOfMonth(new Date(year, month - 1)), 'yyyy-MM-dd')
+      const endDate = format(endOfMonth(new Date(year, month - 1)), 'yyyy-MM-dd')
+
+      console.log('Date range for query:', { startDate, endDate, year, month })
 
       const { data, error } = await supabase
         .from('time_entries')

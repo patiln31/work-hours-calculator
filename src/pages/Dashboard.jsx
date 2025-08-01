@@ -4,11 +4,13 @@ import { timeEntriesService } from '../services/timeEntries'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import Calendar from 'react-calendar'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts'
-import { Calendar as CalendarIcon, Clock, Users, TrendingUp, AlertTriangle, Edit, History, Plus, Trash2, FileSpreadsheet, Download } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, Users, TrendingUp, AlertTriangle, Edit, History, Plus, Trash2, FileSpreadsheet, Download, CalendarDays } from 'lucide-react'
 import ManualEntryModal from '../components/ManualEntryModal'
 import EditHistoryModal from '../components/EditHistoryModal'
+import HolidayLeaveModal from '../components/HolidayLeaveModal'
 import UserSelector from '../components/UserSelector'
 import { excelExportService } from '../services/excelExport';
+import { holidayLeaveService } from '../services/holidayLeaveService';
 
 export default function Dashboard() {
   const { user, isAdmin } = useAuth()
@@ -26,6 +28,9 @@ export default function Dashboard() {
   const [historyEntry, setHistoryEntry] = useState(null)
   const [selectedDateEntry, setSelectedDateEntry] = useState(null)
   const [isExporting, setIsExporting] = useState(false);
+  const [holidaysLeaves, setHolidaysLeaves] = useState([])
+  const [showHolidayLeaveModal, setShowHolidayLeaveModal] = useState(false)
+  const [editingHolidayLeave, setEditingHolidayLeave] = useState(null)
 
   // Enhanced user change handler
   const handleUserChange = (userId) => {
@@ -65,6 +70,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadMonthlyEntries()
+    loadHolidaysLeaves()
   }, [currentMonth, selectedUserId])
 
 
@@ -91,6 +97,20 @@ export default function Dashboard() {
   const handleMonthChange = (date) => {
     setCurrentMonth(date)
     setSelectedDate(date)
+  }
+
+  // Load holidays and leaves for the current month
+  const loadHolidaysLeaves = async () => {
+    try {
+      const year = currentMonth.getFullYear()
+      const month = currentMonth.getMonth() + 1
+      const result = await holidayLeaveService.getHolidaysAndLeaves(year, month, selectedUserId)
+      if (result.success) {
+        setHolidaysLeaves(result.data || [])
+      }
+    } catch (err) {
+      console.error('Failed to load holidays and leaves:', err)
+    }
   }
 
   // Handle manual entry creation/editing
@@ -138,6 +158,21 @@ export default function Dashboard() {
     await loadSelectedDateEntry()
   }
 
+  // Handle holiday/leave management
+  const handleNewHolidayLeave = () => {
+    setEditingHolidayLeave(null)
+    setShowHolidayLeaveModal(true)
+  }
+
+  const handleEditHolidayLeave = (entry) => {
+    setEditingHolidayLeave(entry)
+    setShowHolidayLeaveModal(true)
+  }
+
+  const handleHolidayLeaveSaved = async (savedEntry) => {
+    await loadHolidaysLeaves()
+  }
+
   const handleExportToExcel = async () => {
     setIsExporting(true);
     try {
@@ -160,8 +195,88 @@ export default function Dashboard() {
     }
   };
 
+  // Utility: Generate automatic weekend holidays for a given month (only past and current weekends)
+  function generateWeekendHolidays(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const currentDate = new Date();
+    const weekendHolidays = [];
+    
+    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+      const day = d.getDay();
+      const dateStr = format(d, 'yyyy-MM-dd');
+      
+      // Add Saturday and Sunday as automatic holidays, but only if the date is today or in the past
+      if ((day === 0 || day === 6) && d <= currentDate) { // 0 = Sunday, 6 = Saturday
+        weekendHolidays.push({
+          id: `weekend-${dateStr}`,
+          date: dateStr,
+          type: 'holiday',
+          title: day === 0 ? 'Sunday Holiday' : 'Saturday Holiday',
+          description: 'Automatic weekend holiday',
+          is_approved: true,
+          is_automatic: true, // Flag to identify automatic holidays
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      }
+    }
+    return weekendHolidays;
+  }
+
+  // Utility: Count working days (Mon-Fri) in a given month, excluding only holidays (not leaves)
+  function countWorkingDaysInMonth(date, holidaysLeaves = []) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    let count = 0;
+    
+    // Create a set of holiday dates only (exclude leaves)
+    const holidayDates = new Set(
+      holidaysLeaves
+        .filter(hl => hl.type === 'holiday')
+        .map(hl => hl.date)
+    );
+    
+    for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+      const day = d.getDay();
+      const dateStr = format(d, 'yyyy-MM-dd');
+      
+      // Count only weekdays (Mon-Fri) that are not holidays
+      // Leaves are NOT excluded from working days count
+      if (day !== 0 && day !== 6 && !holidayDates.has(dateStr)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // Generate automatic weekend holidays
+  const weekendHolidays = generateWeekendHolidays(currentMonth);
+  
+  // Combine manual holidays with automatic weekend holidays
+  // But exclude automatic weekend holidays if there's a work entry on that date
+  const allHolidaysLeaves = [
+    ...holidaysLeaves,
+    ...weekendHolidays.filter(weekend => 
+      !holidaysLeaves.some(manual => manual.date === weekend.date) &&
+      !monthlyEntries.some(entry => entry.date === weekend.date)
+    )
+  ];
+  
   // Calculate monthly statistics
   const monthlyStats = timeEntriesService.calculateMonthlyStats(monthlyEntries)
+  // Calculate expected working days (Mon-Fri, excluding weekends and holidays only)
+  const expectedWorkingDays = countWorkingDaysInMonth(currentMonth, allHolidaysLeaves);
+  // Calculate completion rate based on working days (leaves are counted as working days)
+  const completionRate = expectedWorkingDays > 0 ? Math.round((monthlyStats.totalDaysWorked / expectedWorkingDays) * 100) : 0;
+  
+  // Count leaves and holidays for informational purposes
+  const leaveDays = allHolidaysLeaves.filter(hl => hl.type === 'leave').length;
+  const holidayDays = allHolidaysLeaves.filter(hl => hl.type === 'holiday').length;
 
   // Prepare chart data
   const chartData = monthlyEntries
@@ -172,6 +287,12 @@ export default function Dashboard() {
       isUnder: parseFloat(entry.total_hours || 0) < 8.5
     }))
     .reverse() // Show oldest to newest
+
+  // Combine time entries with holidays and leaves for display
+  const allEntries = [
+    ...monthlyEntries.map(entry => ({ ...entry, entryType: 'time' })),
+    ...allHolidaysLeaves.map(entry => ({ ...entry, entryType: 'holiday_leave' }))
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date, newest first
 
   // Format time for display
   const formatTime = (timeStr) => {
@@ -245,32 +366,58 @@ export default function Dashboard() {
                 zIndex: 40
               }}>
               
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2 sm:gap-0">
+              <div className="flex flex-col gap-3 mb-3">
                 <div className="flex items-center">
                   <CalendarIcon className="w-5 h-5 text-purple-400 mr-2" />
                   <h2 className="text-base sm:text-lg font-bold text-white">Select Date</h2>
                 </div>
-                <button
-                  onClick={handleNewEntry}
-                  className="w-full sm:w-auto px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-sm font-medium flex items-center justify-center sm:justify-start"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  New Entry
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleNewHolidayLeave}
+                    className="w-full px-2 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 text-xs sm:text-sm font-medium flex items-center justify-center"
+                  >
+                    <CalendarDays className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="hidden sm:inline">Holiday/Leave</span>
+                    <span className="sm:hidden">Holiday</span>
+                  </button>
+                  <button
+                    onClick={handleNewEntry}
+                    className="w-full px-2 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 text-xs sm:text-sm font-medium flex items-center justify-center"
+                  >
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="hidden sm:inline">New Entry</span>
+                    <span className="sm:hidden">Entry</span>
+                  </button>
+                </div>
               </div>
 
               <div className="calendar-container">
-                                  <Calendar
-                    onChange={setSelectedDate}
-                    value={selectedDate}
-                    onActiveStartDateChange={({ activeStartDate }) => handleMonthChange(activeStartDate)}
-                    className="react-calendar-dark"
-                    locale="en-US"
-                    formatMonth={(locale, date) => format(date, 'MMM yyyy')}
-                    navigationLabel={({ date }) => format(date, 'MMM yyyy')}
-                    calendarType="iso8601"
-                  />
+                <Calendar
+                  onChange={setSelectedDate}
+                  value={selectedDate}
+                  onActiveStartDateChange={({ activeStartDate }) => handleMonthChange(activeStartDate)}
+                  className="react-calendar-dark"
+                  locale="en-US"
+                  formatMonth={(locale, date) => format(date, 'MMM yyyy')}
+                  navigationLabel={({ date }) => format(date, 'MMM yyyy')}
+                  calendarType="iso8601"
+                />
               </div>
+
+              {/* Weekend Indicator */}
+              {(selectedDate.getDay() === 0 || selectedDate.getDay() === 6) && (
+                <div className="mt-3 p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-sm rounded-xl border border-yellow-500/30">
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse mr-2"></div>
+                    <span className="text-yellow-300 text-sm font-medium">
+                      {selectedDate.getDay() === 0 ? 'Sunday' : 'Saturday'} - Weekend Work Available
+                    </span>
+                  </div>
+                  <p className="text-yellow-200/70 text-xs text-center mt-1">
+                    You can add work entries on weekends if needed
+                  </p>
+                </div>
+              )}
 
               {/* EXPANDED Selected Date Entry Summary - More breathing room */}
               {selectedDateEntry && (
@@ -389,6 +536,169 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+
+            {/* Holidays and Leaves Section */}
+            {holidaysLeaves.length > 0 && (
+              <div className="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-gray-700/50"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
+                  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                  zIndex: 30
+                }}>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <CalendarDays className="w-5 h-5 text-orange-400 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold bg-gradient-to-r from-orange-400 via-red-400 to-pink-400 bg-clip-text text-transparent">
+                      Holidays & Leaves
+                    </h3>
+                  </div>
+                  <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded-full">
+                    {holidaysLeaves.length} {holidaysLeaves.length === 1 ? 'entry' : 'entries'}
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {holidaysLeaves.map((entry) => (
+                    <div 
+                      key={entry.id}
+                      className={`p-2 rounded-lg border transition-all cursor-pointer hover:bg-gray-800/30 ${
+                        entry.type === 'holiday' 
+                          ? 'bg-purple-500/10 border-purple-500/30' 
+                          : 'bg-orange-500/10 border-orange-500/30'
+                      }`}
+                      onClick={() => handleEditHolidayLeave(entry)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={`w-2 h-2 rounded-full mr-2 ${
+                            entry.type === 'holiday' ? 'bg-purple-400' : 'bg-orange-400'
+                          }`}></div>
+                          <span className="text-sm font-medium text-white">
+                            {format(new Date(entry.date), 'MMM dd')}
+                          </span>
+                          <span className="text-xs text-gray-400 ml-2">
+                            {entry.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {entry.is_approved && (
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          )}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            entry.type === 'holiday' 
+                              ? 'bg-purple-500/20 text-purple-300' 
+                              : 'bg-orange-500/20 text-orange-300'
+                          }`}>
+                            {entry.type}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Monthly Statistics Section - Below Calendar */}
+            {monthlyEntries.length > 0 && (
+              <div className="bg-gradient-to-br from-gray-900/80 via-black/60 to-gray-900/80 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-gray-700/50"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(20,20,20,0.9) 50%, rgba(0,0,0,0.8) 100%)',
+                  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                  zIndex: 30
+                }}>
+                
+                <div className="flex items-center mb-3">
+                  <TrendingUp className="w-5 h-5 text-cyan-400 mr-2" />
+                  <h3 className="text-base sm:text-lg font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Monthly Statistics
+                  </h3>
+                </div>
+
+                {/* Statistics Cards Grid */}
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  
+                  {/* Average Hours Card */}
+                  <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-xl rounded-xl border border-cyan-500/30 p-2 sm:p-3 h-14 sm:h-16 flex flex-col justify-center items-center transition-all duration-300 hover:transform hover:scale-[1.02] group">
+                    <div className="text-center w-full">
+                      <div className="text-cyan-300 text-xs font-bold uppercase tracking-wider mb-0.5 opacity-80">Avg/Day</div>
+                      <div className="text-cyan-400 text-sm sm:text-base font-black">
+                        {monthlyStats.averageHours > 0 ? `${monthlyStats.averageHours.toFixed(1)}h` : '--'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Total Days */}
+                  <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-xl rounded-xl border border-purple-500/30 p-2 sm:p-3 h-14 sm:h-16 flex flex-col justify-center items-center transition-all duration-300 hover:transform hover:scale-[1.02] group">
+                    <div className="text-center w-full">
+                      <div className="text-purple-300 text-xs font-bold uppercase tracking-wider mb-0.5 opacity-80">Days Worked</div>
+                      <div className="text-purple-400 text-sm sm:text-base font-black">
+                        {monthlyStats.totalDaysWorked}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Total Hours */}
+                  <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-xl border border-green-500/30 p-2 sm:p-3 h-14 sm:h-16 flex flex-col justify-center items-center transition-all duration-300 hover:transform hover:scale-[1.02] group">
+                    <div className="text-center w-full">
+                      <div className="text-green-300 text-xs font-bold uppercase tracking-wider mb-0.5 opacity-80">Total Hours</div>
+                      <div className="text-green-400 text-sm sm:text-base font-black">
+                        {monthlyStats.totalHours > 0 ? `${monthlyStats.totalHours.toFixed(1)}h` : '--'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Days Under 8.5h */}
+                  <div className="bg-gradient-to-br from-orange-500/20 to-red-500/20 backdrop-blur-xl rounded-xl border border-orange-500/30 p-2 sm:p-3 h-14 sm:h-16 flex flex-col justify-center items-center transition-all duration-300 hover:transform hover:scale-[1.02] group">
+                    <div className="text-center w-full">
+                      <div className="text-orange-300 text-xs font-bold uppercase tracking-wider mb-0.5 opacity-80">Under 8.5h</div>
+                      <div className="text-orange-400 text-sm sm:text-base font-black">
+                        {monthlyStats.daysUnder8_5}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Completion Rate Bar */}
+                {expectedWorkingDays > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-gray-300">Completion Rate</span>
+                      <span className="text-xs font-bold text-gray-200">
+                        {completionRate}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+                        style={{ 
+                          width: `${completionRate}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-gray-400">
+                        Worked: {monthlyStats.totalDaysWorked}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        Expected: {expectedWorkingDays}
+                      </span>
+                    </div>
+                    {(holidayDays > 0 || leaveDays > 0) && (
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-purple-400">
+                          Holidays: {holidayDays}
+                        </span>
+                        <span className="text-xs text-orange-400">
+                          Leaves: {leaveDays}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Column - Data & Charts - More space */}
@@ -459,9 +769,9 @@ export default function Dashboard() {
                 <div className="bg-red-500/20 rounded-xl p-4 border border-red-500/20">
                   <p className="text-red-400 text-center text-sm sm:text-base">{error}</p>
                 </div>
-              ) : monthlyEntries.length === 0 ? (
+              ) : allEntries.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
-                  <p className="text-gray-400 text-sm sm:text-base">No time entries found for this month</p>
+                  <p className="text-gray-400 text-sm sm:text-base">No entries found for this month</p>
                 </div>
               ) : (
                 <>
@@ -470,93 +780,205 @@ export default function Dashboard() {
                     <table className="w-full text-base">
                       <thead>
                         <tr className="border-b border-gray-700/50">
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Date</th>
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Check In</th>
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Check Out</th>
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Break</th>
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Meeting Hours</th>
-                          <th className="text-left py-4 px-4 text-gray-400 font-semibold text-base">Total Hours</th>
-                          <th className="text-center py-4 px-4 text-gray-400 font-semibold text-base">Actions</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-20">Date</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-24">Type</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-24">Check In</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-24">Check Out</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-32">Break</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-28">Meeting Hours</th>
+                          <th className="text-left py-4 px-3 text-gray-400 font-semibold text-sm w-24">Total Hours</th>
+                          <th className="text-center py-4 px-3 text-gray-400 font-semibold text-sm w-32">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {monthlyEntries.map((entry) => {
-                          const totalHours = parseFloat(entry.total_hours || 0)
-                          const isUnder8_5 = totalHours < 8.5 && totalHours > 0
-                          
-                          return (
-                            <tr 
-                              key={entry.id} 
-                              className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer ${
-                                isUnder8_5 ? 'bg-orange-500/10' : ''
-                              }`}
-                              onClick={() => setSelectedDate(new Date(entry.date))}
-                            >
-                              <td className="py-4 px-4 text-gray-200 font-medium text-base">
+                        {allEntries.map((entry) => {
+                          if (entry.entryType === 'holiday_leave') {
+                            // Render holiday/leave entry
+                            return (
+                              <tr 
+                                key={entry.id} 
+                                className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer min-h-[60px] ${
+                                  entry.type === 'holiday' 
+                                    ? entry.is_automatic 
+                                      ? 'bg-gray-500/10' 
+                                      : 'bg-purple-500/10'
+                                    : 'bg-orange-500/10'
+                                }`}
+                                onClick={() => setSelectedDate(new Date(entry.date))}
+                              >
+                                                              <td className="py-4 px-3 text-gray-200 font-medium text-sm">
                                 {format(new Date(entry.date), 'MMM dd')}
                               </td>
-                              <td className="py-4 px-4 text-gray-400 font-medium text-base">
+                              <td className="py-4 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                  entry.type === 'holiday'
+                                    ? entry.is_automatic 
+                                      ? 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                                      : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                    : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                                }`}>
+                                  {entry.type === 'holiday' 
+                                    ? entry.is_automatic 
+                                      ? <><span className="mr-1">🏠</span><span>Weekend</span></>
+                                      : <><span className="mr-1">🏖️</span><span>Holiday</span></>
+                                    : <><span className="mr-1">📝</span><span>Leave</span></>
+                                  }
+                                </span>
+                              </td>
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
+                                --
+                              </td>
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
+                                --
+                              </td>
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
+                                --
+                              </td>
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
+                                --
+                              </td>
+                              <td className="py-4 px-3">
+                                <span 
+                                  className={`font-semibold text-sm truncate block ${
+                                    entry.type === 'holiday' 
+                                      ? entry.is_automatic 
+                                        ? 'text-gray-300' 
+                                        : 'text-purple-300'
+                                      : 'text-orange-300'
+                                  }`}
+                                  title={entry.title}
+                                >
+                                  {entry.title}
+                                </span>
+                                {entry.description && (
+                                  <div className="text-xs text-gray-500 truncate mt-1" title={entry.description}>
+                                    {entry.description}
+                                  </div>
+                                )}
+                              </td>
+                                                            <td className="py-4 px-3">
+                                {!entry.is_automatic ? (
+                                  <div className="flex items-center justify-center space-x-1">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleEditHolidayLeave(entry)
+                                      }}
+                                      className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                                      title="Edit Holiday/Leave"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDeleteHolidayLeave(entry)
+                                      }}
+                                      className="p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                                      title="Delete Holiday/Leave"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="text-center text-gray-500 text-xs">
+                                    Auto
+                                  </div>
+                                )}
+                              </td>
+                              </tr>
+                            )
+                          } else {
+                            // Render regular time entry
+                            const totalHours = parseFloat(entry.total_hours || 0)
+                            const isUnder8_5 = totalHours < 8.5 && totalHours > 0
+                            
+                            return (
+                              <tr 
+                                key={entry.id} 
+                                className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors cursor-pointer min-h-[60px] ${
+                                  isUnder8_5 ? 'bg-orange-500/10' : ''
+                                }`}
+                                onClick={() => setSelectedDate(new Date(entry.date))}
+                              >
+                                                              <td className="py-4 px-3 text-gray-200 font-medium text-sm">
+                                {format(new Date(entry.date), 'MMM dd')}
+                              </td>
+                              <td className="py-4 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                  (new Date(entry.date).getDay() === 0 || new Date(entry.date).getDay() === 6)
+                                    ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                                    : 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                }`}>
+                                  {(new Date(entry.date).getDay() === 0 || new Date(entry.date).getDay() === 6)
+                                    ? '🌅 Weekend Work'
+                                    : '⏰ Work'
+                                  }
+                                </span>
+                              </td>
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
                                 {formatTime(entry.check_in)}
                               </td>
-                              <td className="py-4 px-4 text-gray-400 font-medium text-base">
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
                                 {formatTime(entry.check_out)}
                               </td>
-                              <td className="py-4 px-4 text-gray-400 font-medium text-base">
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
                                 {entry.break_in && entry.break_out 
                                   ? `${formatTime(entry.break_in)} - ${formatTime(entry.break_out)}`
                                   : '--'
                                 }
                               </td>
-                              <td className="py-4 px-4 text-gray-400 font-medium text-base">
+                              <td className="py-4 px-3 text-gray-400 font-medium text-sm">
                                 {entry.meeting_hours ? (
-                                  <span className="text-indigo-300 font-medium">
+                                  <span className="text-indigo-300 font-medium text-sm">
                                     {formatHours(entry.meeting_hours)}
                                   </span>
                                 ) : '--'}
                               </td>
-                              <td className="py-4 px-4">
-                                <span className={`font-semibold text-base ${
+                              <td className="py-4 px-3">
+                                <span className={`font-semibold text-sm ${
                                   isUnder8_5 ? 'text-orange-300' : 'text-green-300'
                                 }`}>
                                   {formatHours(entry.total_hours)}
                                 </span>
                               </td>
-                              <td className="py-4 px-4">
-                                <div className="flex items-center justify-center space-x-2">
+                                                            <td className="py-4 px-3">
+                                <div className="flex items-center justify-center space-x-1">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       handleEditEntry(entry)
                                     }}
-                                    className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                                    className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
                                     title="Edit Entry"
                                   >
-                                    <Edit className="w-4 h-4" />
+                                    <Edit className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       handleShowHistory(entry)
                                     }}
-                                    className="p-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
+                                    className="p-1.5 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
                                     title="View History"
                                   >
-                                    <History className="w-4 h-4" />
+                                    <History className="w-3.5 h-3.5" />
                                   </button>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       handleDeleteEntry(entry)
                                     }}
-                                    className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                                    className="p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                                     title="Delete Entry"
                                   >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </td>
-                            </tr>
-                          )
+                              </tr>
+                            )
+                          }
                         })}
                       </tbody>
                     </table>
@@ -564,92 +986,188 @@ export default function Dashboard() {
 
                   {/* Mobile Card View */}
                   <div className="block md:hidden space-y-3">
-                    {monthlyEntries.map((entry) => {
-                      const totalHours = parseFloat(entry.total_hours || 0)
-                      const isUnder8_5 = totalHours < 8.5 && totalHours > 0
-                      
-                      return (
-                        <div 
-                          key={entry.id}
-                          className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                            isUnder8_5 
-                              ? 'bg-orange-500/10 border-orange-500/30' 
-                              : 'bg-gray-800/30 border-gray-700/50 hover:bg-gray-800/50'
-                          }`}
-                          onClick={() => setSelectedDate(new Date(entry.date))}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="font-medium text-white">
-                              {format(new Date(entry.date), 'MMM dd, yyyy')}
-                            </div>
-                            <div className={`font-bold text-sm ${
-                              isUnder8_5 ? 'text-orange-400' : 'text-green-400'
-                            }`}>
-                              {formatHours(entry.total_hours)}
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-3 text-xs text-gray-300">
-                            <div>
-                              <span className="block text-gray-400">Check In</span>
-                              <span className="font-medium">{formatTime(entry.check_in)}</span>
-                            </div>
-                            <div>
-                              <span className="block text-gray-400">Check Out</span>
-                              <span className="font-medium">{formatTime(entry.check_out)}</span>
-                            </div>
-                            {(entry.break_in && entry.break_out) && (
-                              <div className="col-span-2">
-                                <span className="block text-gray-400">Break</span>
-                                <span className="font-medium">
-                                  {formatTime(entry.break_in)} - {formatTime(entry.break_out)}
-                                </span>
+                    {allEntries.map((entry) => {
+                      if (entry.entryType === 'holiday_leave') {
+                        // Render holiday/leave card
+                        return (
+                          <div 
+                            key={entry.id}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                              entry.type === 'holiday'
+                                ? entry.is_automatic
+                                  ? 'bg-gray-500/10 border-gray-500/30'
+                                  : 'bg-purple-500/10 border-purple-500/30'
+                                : 'bg-orange-500/10 border-orange-500/30'
+                            }`}
+                            onClick={() => setSelectedDate(new Date(entry.date))}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="font-medium text-white">
+                                {format(new Date(entry.date), 'MMM dd, yyyy')}
                               </div>
-                            )}
-                            {entry.meeting_hours && (
-                              <div className="col-span-2">
-                                <span className="block text-gray-400">Meeting Hours</span>
-                                <span className="font-medium text-indigo-400">
-                                  {formatHours(entry.meeting_hours)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                entry.type === 'holiday'
+                                  ? entry.is_automatic
+                                    ? 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                  : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                              }`}>
+                                {entry.type === 'holiday' 
+                                  ? entry.is_automatic 
+                                    ? <><span className="mr-1">🏠</span><span>Weekend</span></>
+                                    : <><span className="mr-1">🏖️</span><span>Holiday</span></>
+                                  : <><span className="mr-1">📝</span><span>Leave</span></>
+                                }
+                              </span>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <span className={`font-bold text-base ${
+                                entry.type === 'holiday' 
+                                  ? entry.is_automatic 
+                                    ? 'text-gray-300' 
+                                    : 'text-purple-300'
+                                  : 'text-orange-300'
+                              }`}>
+                                {entry.title}
+                              </span>
+                              {entry.description && (
+                                <p className="text-xs text-gray-400 mt-1">{entry.description}</p>
+                              )}
+                            </div>
 
-                          <div className="mt-3 flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditEntry(entry)
-                              }}
-                              className="flex-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors text-xs font-medium flex items-center justify-center"
-                            >
-                              <Edit className="w-3 h-3 mr-1" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleShowHistory(entry)
-                              }}
-                              className="flex-1 px-2 py-1 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors text-xs font-medium flex items-center justify-center"
-                            >
-                              <History className="w-3 h-3 mr-1" />
-                              History
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteEntry(entry)
-                              }}
-                              className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-xs font-medium flex items-center justify-center"
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Delete
-                            </button>
+                            <div className="flex gap-2">
+                              {!entry.is_automatic ? (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleEditHolidayLeave(entry)
+                                    }}
+                                    className="flex-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors text-xs font-medium flex items-center justify-center"
+                                  >
+                                    <Edit className="w-3 h-3 mr-1" />
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDeleteHolidayLeave(entry)
+                                    }}
+                                    className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-xs font-medium flex items-center justify-center"
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Delete
+                                  </button>
+                                </>
+                              ) : (
+                                <div className="flex-1 px-2 py-1 bg-gray-500/20 text-gray-400 rounded-lg text-xs font-medium flex items-center justify-center">
+                                  Automatic Weekend
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )
+                        )
+                      } else {
+                        // Render regular time entry card
+                        const totalHours = parseFloat(entry.total_hours || 0)
+                        const isUnder8_5 = totalHours < 8.5 && totalHours > 0
+                        
+                        return (
+                          <div 
+                            key={entry.id}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                              isUnder8_5 
+                                ? 'bg-orange-500/10 border-orange-500/30' 
+                                : 'bg-gray-800/30 border-gray-700/50 hover:bg-gray-800/50'
+                            }`}
+                            onClick={() => setSelectedDate(new Date(entry.date))}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="font-medium text-white">
+                                {format(new Date(entry.date), 'MMM dd, yyyy')}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                  (new Date(entry.date).getDay() === 0 || new Date(entry.date).getDay() === 6)
+                                    ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                                    : 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                }`}>
+                                  {(new Date(entry.date).getDay() === 0 || new Date(entry.date).getDay() === 6)
+                                    ? '🌅 Weekend Work'
+                                    : '⏰ Work'
+                                  }
+                                </span>
+                                <div className={`font-bold text-sm ${
+                                  isUnder8_5 ? 'text-orange-400' : 'text-green-400'
+                                }`}>
+                                  {formatHours(entry.total_hours)}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3 text-xs text-gray-300">
+                              <div>
+                                <span className="block text-gray-400">Check In</span>
+                                <span className="font-medium">{formatTime(entry.check_in)}</span>
+                              </div>
+                              <div>
+                                <span className="block text-gray-400">Check Out</span>
+                                <span className="font-medium">{formatTime(entry.check_out)}</span>
+                              </div>
+                              {(entry.break_in && entry.break_out) && (
+                                <div className="col-span-2">
+                                  <span className="block text-gray-400">Break</span>
+                                  <span className="font-medium">
+                                    {formatTime(entry.break_in)} - {formatTime(entry.break_out)}
+                                  </span>
+                                </div>
+                              )}
+                              {entry.meeting_hours && (
+                                <div className="col-span-2">
+                                  <span className="block text-gray-400">Meeting Hours</span>
+                                  <span className="font-medium text-indigo-400">
+                                    {formatHours(entry.meeting_hours)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mt-3 flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditEntry(entry)
+                                }}
+                                className="flex-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors text-xs font-medium flex items-center justify-center"
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleShowHistory(entry)
+                                }}
+                                className="flex-1 px-2 py-1 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors text-xs font-medium flex items-center justify-center"
+                              >
+                                <History className="w-3 h-3 mr-1" />
+                                History
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteEntry(entry)
+                                }}
+                                className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-xs font-medium flex items-center justify-center"
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      }
                     })}
                   </div>
                 </>
@@ -1409,6 +1927,19 @@ export default function Dashboard() {
         }}
         timeEntry={historyEntry}
         onUndo={handleHistoryUndo}
+      />
+
+      <HolidayLeaveModal
+        isOpen={showHolidayLeaveModal}
+        onClose={() => {
+          setShowHolidayLeaveModal(false)
+          setEditingHolidayLeave(null)
+        }}
+        selectedDate={selectedDate}
+        existingEntry={editingHolidayLeave}
+        onSave={handleHolidayLeaveSaved}
+        isAdmin={isAdmin}
+        targetUserId={selectedUserId}
       />
     </div>
   )
